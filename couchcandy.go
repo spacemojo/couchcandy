@@ -8,7 +8,23 @@ import (
 	"strconv"
 )
 
-func getDatabaseURL(session Session, db string) string {
+// CouchCandy : Struct that provides all CouchDB's API has to offer.
+type CouchCandy struct {
+	LclSession *Session
+	GetHandler func(string) (*http.Response, error)
+}
+
+// NewCouchCandy : Returns a new CouchCandy struct initialised with the provided values.
+func NewCouchCandy(session *Session) *CouchCandy {
+	cc := &CouchCandy{
+		LclSession: session,
+		GetHandler: http.Get,
+	}
+	return cc
+}
+
+// CreateDatabaseURL : Creates the right URL to point to the passed database.
+func CreateDatabaseURL(session *Session, db string) string {
 	var buffer bytes.Buffer
 	buffer.WriteString(session.Host)
 	buffer.WriteString(":")
@@ -19,10 +35,10 @@ func getDatabaseURL(session Session, db string) string {
 }
 
 // GetDatabaseInfo returns basic information about the passed database.
-func GetDatabaseInfo(session Session, db string) (*DatabaseInfo, error) {
+func (c *CouchCandy) GetDatabaseInfo(db string) (*DatabaseInfo, error) {
 
-	url := getDatabaseURL(session, db)
-	res, geterr := http.Get(url)
+	url := CreateDatabaseURL(c.LclSession, db)
+	res, geterr := c.GetHandler(url)
 	if geterr != nil {
 		return nil, geterr
 	}

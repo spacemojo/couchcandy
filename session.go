@@ -8,14 +8,8 @@ type Session struct {
 	Password string
 }
 
-// NewSession : creates a new Session
-func NewSession() *Session {
-	session := &Session{}
-	return session
-}
-
-// NewSessionParams : creates a new session initialized with the passed values
-func NewSessionParams(host string, port int, username string, password string) *Session {
+// NewSession : creates a new session initialized with the passed values
+func NewSession(host string, port int, username string, password string) *Session {
 	session := &Session{
 		Host:     host,
 		Port:     port,
