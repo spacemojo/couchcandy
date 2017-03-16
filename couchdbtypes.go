@@ -10,8 +10,10 @@ import (
 // your custom types since all documents in CouchDB have these
 // 2 attributes.
 type CandyDocument struct {
-	ID  string `json:"_id"`
-	REV string `json:"_rev"`
+	ID     string `json:"_id"`
+	REV    string `json:"_rev"`
+	Error  string `json:"error"`
+	Reason string `json:"reason"`
 }
 
 // CouchCandy : Struct that provides all CouchDB's API has to offer.
