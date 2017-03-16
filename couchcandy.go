@@ -51,7 +51,7 @@ func (c *CouchCandy) PutDatabase(name string) (*OperationResponse, error) {
 
 }
 
-// GetAllDatabases : retuns all the database names in the system.
+// GetAllDatabases : Returns all the database names in the system.
 func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 
 	url := CreateAllDatabasesURL(c.LclSession)
