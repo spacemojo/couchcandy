@@ -2,6 +2,8 @@ package couchcandy
 
 import (
 	"bytes"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 )
 
@@ -44,4 +46,50 @@ func CreateAllDatabasesURL(session *Session) string {
 	buffer.WriteString(CreateBaseURL(session))
 	buffer.WriteString("/_all_dbs")
 	return buffer.String()
+}
+
+func (c *CouchCandy) readFromPut(url string, body string) ([]byte, error) {
+	return readFromWithBody(url, body, c.PutHandler)
+}
+
+func readFromWithBody(url string, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
+
+	res, err := handler(url, body)
+	if err != nil {
+		return nil, err
+	}
+
+	page, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return page, nil
+
+}
+
+func readFrom(url string, handler func(str string) (*http.Response, error)) ([]byte, error) {
+
+	res, err := handler(url)
+	if err != nil {
+		return nil, err
+	}
+
+	page, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return page, nil
+
+}
+
+func (c *CouchCandy) readFromDelete(url string) ([]byte, error) {
+	return readFrom(url, c.DeleteHandler)
+}
+
+func (c *CouchCandy) readFromGet(url string) ([]byte, error) {
+	return readFrom(url, c.GetHandler)
 }

@@ -1,9 +1,6 @@
 package couchcandy
 
-import (
-	"encoding/json"
-	"io/ioutil"
-)
+import "encoding/json"
 
 // GetDatabaseInfo returns basic information about the database in session.
 func (c *CouchCandy) GetDatabaseInfo() (*DatabaseInfo, error) {
@@ -51,6 +48,22 @@ func (c *CouchCandy) PutDatabase(name string) (*OperationResponse, error) {
 
 }
 
+// DeleteDatabase : Deletes the passed database from the system.
+func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
+
+	c.LclSession.Database = name
+	url := CreateDatabaseURL(c.LclSession)
+	page, err := c.readFromDelete(url)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &OperationResponse{}
+	unmarshallError := json.Unmarshal(page, response)
+	return response, unmarshallError
+
+}
+
 // GetAllDatabases : Returns all the database names in the system.
 func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 
@@ -63,39 +76,5 @@ func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 	var dbs []string
 	unmarshallError := json.Unmarshal(page, &dbs)
 	return dbs, unmarshallError
-
-}
-
-func (c *CouchCandy) readFromPut(url string, body string) ([]byte, error) {
-
-	res, puterr := c.PutHandler(url, body)
-	if puterr != nil {
-		return nil, puterr
-	}
-
-	page, puterr := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if puterr != nil {
-		return nil, puterr
-	}
-
-	return page, nil
-
-}
-
-func (c *CouchCandy) readFromGet(url string) ([]byte, error) {
-
-	res, geterr := c.GetHandler(url)
-	if geterr != nil {
-		return nil, geterr
-	}
-
-	page, geterr := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if geterr != nil {
-		return nil, geterr
-	}
-
-	return page, nil
 
 }

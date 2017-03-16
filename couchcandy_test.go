@@ -122,3 +122,21 @@ func TestPutDatabase(t *testing.T) {
 	}
 
 }
+
+func TestDeleteDatabase(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok": true}`)),
+		}
+		return response, nil
+	}
+
+	res, err := couchcandy.DeleteDatabase("unittestdb")
+	if err != nil || !res.OK {
+		t.Fail()
+	}
+
+}

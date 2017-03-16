@@ -16,17 +16,19 @@ type CandyDocument struct {
 
 // CouchCandy : Struct that provides all CouchDB's API has to offer.
 type CouchCandy struct {
-	LclSession *Session
-	GetHandler func(string) (*http.Response, error)
-	PutHandler func(string, string) (*http.Response, error)
+	LclSession    *Session
+	GetHandler    func(string) (*http.Response, error)
+	PutHandler    func(string, string) (*http.Response, error)
+	DeleteHandler func(string) (*http.Response, error)
 }
 
 // NewCouchCandy : Returns a new CouchCandy struct initialised with the provided values.
 func NewCouchCandy(session *Session) *CouchCandy {
 	cc := &CouchCandy{
-		LclSession: session,
-		GetHandler: http.Get,
-		PutHandler: defaultPutHandler,
+		LclSession:    session,
+		GetHandler:    http.Get,
+		PutHandler:    defaultPutHandler,
+		DeleteHandler: defaultDeleteHandler,
 	}
 	return cc
 }
@@ -34,6 +36,21 @@ func NewCouchCandy(session *Session) *CouchCandy {
 func defaultPutHandler(url string, body string) (*http.Response, error) {
 
 	request, requestError := http.NewRequest(http.MethodPut, url, strings.NewReader(body))
+	if requestError != nil {
+		return nil, requestError
+	}
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+
+}
+
+func defaultDeleteHandler(url string) (*http.Response, error) {
+
+	request, requestError := http.NewRequest(http.MethodDelete, url, nil)
 	if requestError != nil {
 		return nil, requestError
 	}
