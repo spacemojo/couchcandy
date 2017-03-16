@@ -86,6 +86,22 @@ func TestGetDocument(t *testing.T) {
 
 }
 
+func TestGetDocumentFailure(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("Deliberate error from TestGetDocumentFailure()")
+	}
+
+	profile := &UserProfile{}
+	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile)
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
 func TestGetAllDatabases(t *testing.T) {
 
 	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
@@ -102,6 +118,21 @@ func TestGetAllDatabases(t *testing.T) {
 		t.Fail()
 	}
 	fmt.Printf("Database names : %v\n", names)
+
+}
+
+func TestGetAllDatabasesFailure(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("Deliberate error from TestGetAllDatabasesFailure()")
+	}
+
+	_, err := couchcandy.GetAllDatabases()
+	if err == nil {
+		t.Fail()
+	}
 
 }
 
@@ -123,7 +154,40 @@ func TestPutDatabase(t *testing.T) {
 
 }
 
+func TestPutDatabaseFailure(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("Deliberate error from TestPutDatabaseFailure()")
+	}
+
+	_, err := couchcandy.PutDatabase("unittestdb")
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
 func TestDeleteDatabase(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok": true}`)),
+		}
+		return response, nil
+	}
+
+	res, err := couchcandy.DeleteDatabase("unittestdb")
+	if err != nil || !res.OK {
+		t.Fail()
+	}
+
+}
+
+func TestDeleteDatabaseFailure(t *testing.T) {
 
 	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
 	couchcandy := NewCouchCandy(session)

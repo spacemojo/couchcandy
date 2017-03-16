@@ -5,6 +5,17 @@ import (
 	"strings"
 )
 
+type CouchCandyClient interface {
+	GetDatabaseInfo()
+	GetDocument(id string, v interface{}) error
+	PutDatabase(name string) (*OperationResponse, error)
+	DeleteDatabase(name string) (*OperationResponse, error)
+	GetAllDatabases() ([]string, error)
+	readFromPut(url string, body string) ([]byte, error)
+	readFromDelete(url string) ([]byte, error)
+	readFromGet(url string) ([]byte, error)
+}
+
 // CandyDocument : struct for holding a CouchCandy document.
 // Not supposed to be used directly but is required to construct
 // your custom types since all documents in CouchDB have these
