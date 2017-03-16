@@ -3,6 +3,7 @@
 *Go client for Apache CouchDB* 
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/spacemojo/couchcandy)](https://goreportcard.com/report/github.com/spacemojo/couchcandy)
+[![Build Status](https://travis-ci.org/spacemojo/couchcandy.svg?branch=master)](https://travis-ci.org/spacemojo/couchcandy)
 
 This is my first try at a GoLang project, be gentle.
 
