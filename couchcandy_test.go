@@ -88,7 +88,6 @@ func TestGetDocument(t *testing.T) {
 
 func TestGetAllDatabases(t *testing.T) {
 
-	fmt.Println("GetAllDatabasesTest")
 	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
@@ -103,5 +102,23 @@ func TestGetAllDatabases(t *testing.T) {
 		t.Fail()
 	}
 	fmt.Printf("Database names : %v\n", names)
+
+}
+
+func TestPutDatabase(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok": true}`)),
+		}
+		return response, nil
+	}
+
+	res, err := couchcandy.PutDatabase("unittestdb")
+	if err != nil || !res.OK {
+		t.Fail()
+	}
 
 }
