@@ -1,6 +1,10 @@
 package couchcandy
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+)
 
 // GetDatabaseInfo returns basic information about the database in session.
 func (c *CouchCandy) GetDatabaseInfo() (*DatabaseInfo, error) {
@@ -76,5 +80,51 @@ func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 	var dbs []string
 	unmarshallError := json.Unmarshal(page, &dbs)
 	return dbs, unmarshallError
+
+}
+
+func (c *CouchCandy) readFromPut(url string, body string) ([]byte, error) {
+	return readFromWithBody(url, body, c.PutHandler)
+}
+
+func (c *CouchCandy) readFromDelete(url string) ([]byte, error) {
+	return readFrom(url, c.DeleteHandler)
+}
+
+func (c *CouchCandy) readFromGet(url string) ([]byte, error) {
+	return readFrom(url, c.GetHandler)
+}
+
+func readFromWithBody(url string, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
+
+	res, err := handler(url, body)
+	if err != nil {
+		return nil, err
+	}
+
+	page, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return page, nil
+
+}
+
+func readFrom(url string, handler func(str string) (*http.Response, error)) ([]byte, error) {
+
+	res, err := handler(url)
+	if err != nil {
+		return nil, err
+	}
+
+	page, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return page, nil
 
 }
