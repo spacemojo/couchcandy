@@ -2,6 +2,7 @@ package couchcandy
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -32,6 +33,21 @@ func (c *CouchCandy) GetDocument(id string, v interface{}) error {
 
 	unmarshallError := json.Unmarshal(page, v)
 	return unmarshallError
+
+}
+
+// GetAllDocuments : Returns all documents in the database based on the passed parameters.
+func (c *CouchCandy) GetAllDocuments(descending bool, limit int, includeDocs bool) (*AllDocuments, error) {
+
+	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", CreateDatabaseURL(c.LclSession), descending, limit, includeDocs)
+	page, err := readFrom(url, c.GetHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	allDocuments := &AllDocuments{}
+	unmarshallError := json.Unmarshal(page, allDocuments)
+	return allDocuments, unmarshallError
 
 }
 

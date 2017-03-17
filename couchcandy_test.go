@@ -192,15 +192,33 @@ func TestDeleteDatabaseFailure(t *testing.T) {
 	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
 	couchcandy := NewCouchCandy(session)
 	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("Deliberate error from TestDeleteDatabaseFailure()")
+	}
+
+	_, err := couchcandy.DeleteDatabase("unittestdb")
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestGetAllDocuments(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok": true}`)),
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"total_rows":20682,"offset":0,"rows":[
+			{"id":"ALB01","key":"ALB01","value":{"rev":"1-66a2e993bd32c834f4c2bb655b520c42"}},
+			{"id":"ALT","key":"ALT","value":{"rev":"2-70d3ae1a59ab2f5be945881afbf6243d"}},
+			{"id":"ALT01","key":"ALT01","value":{"rev":"1-d694d4e89aed0b02828d324b26d430c4"}},
+			{"id":"ANA","key":"ANA","value":{"rev":"57-bf879cbfc36d7e97e7ddc578f18d675e"}},
+			{"id":"ANA01","key":"ANA01","value":{"rev":"1-583301ed352ec7aaea11793618a2fdec"}}
+			]}`)),
 		}
 		return response, nil
 	}
 
-	res, err := couchcandy.DeleteDatabase("unittestdb")
-	if err != nil || !res.OK {
-		t.Fail()
-	}
+	couchcandy.GetAllDocuments(false, 5, false)
 
 }

@@ -5,17 +5,6 @@ import (
 	"strings"
 )
 
-type CouchCandyClient interface {
-	GetDatabaseInfo()
-	GetDocument(id string, v interface{}) error
-	PutDatabase(name string) (*OperationResponse, error)
-	DeleteDatabase(name string) (*OperationResponse, error)
-	GetAllDatabases() ([]string, error)
-	readFromPut(url string, body string) ([]byte, error)
-	readFromDelete(url string) ([]byte, error)
-	readFromGet(url string) ([]byte, error)
-}
-
 // CandyDocument : struct for holding a CouchCandy document.
 // Not supposed to be used directly but is required to construct
 // your custom types since all documents in CouchDB have these
@@ -29,21 +18,20 @@ type CandyDocument struct {
 
 // CouchCandy : Struct that provides all CouchDB's API has to offer.
 type CouchCandy struct {
-	LclSession    *Session
+	LclSession    Session
 	GetHandler    func(string) (*http.Response, error)
 	PutHandler    func(string, string) (*http.Response, error)
 	DeleteHandler func(string) (*http.Response, error)
 }
 
 // NewCouchCandy : Returns a new CouchCandy struct initialised with the provided values.
-func NewCouchCandy(session *Session) *CouchCandy {
-	cc := &CouchCandy{
+func NewCouchCandy(session Session) *CouchCandy {
+	return &CouchCandy{
 		LclSession:    session,
 		GetHandler:    http.Get,
 		PutHandler:    defaultPutHandler,
 		DeleteHandler: defaultDeleteHandler,
 	}
-	return cc
 }
 
 func defaultPutHandler(url string, body string) (*http.Response, error) {
@@ -107,14 +95,27 @@ type Session struct {
 	Password string
 }
 
+// AllDocuments : This struct contains the response to the all documents call.
+type AllDocuments struct {
+	TotalRows int   `json:"total_rows"`
+	Offset    int   `json:"offset"`
+	Rows      []Row `json:"rows"`
+}
+
+// Row : This is a row in the array of rows on the AllDocuments struc.
+type Row struct {
+	ID    string `json:"id"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 // NewSession : creates a new session initialized with the passed values
-func NewSession(host string, port int, database string, username string, password string) *Session {
-	session := &Session{
+func NewSession(host string, port int, database string, username string, password string) Session {
+	return Session{
 		Host:     host,
 		Port:     port,
 		Database: database,
 		Username: username,
 		Password: password,
 	}
-	return session
 }
