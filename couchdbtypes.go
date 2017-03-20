@@ -10,10 +10,17 @@ import (
 // your custom types since all documents in CouchDB have these
 // 2 attributes.
 type CandyDocument struct {
-	ID     string `json:"_id"`
-	REV    string `json:"_rev"`
-	Error  string `json:"error"`
-	Reason string `json:"reason"`
+	ID        string   `json:"_id"`
+	REV       string   `json:"_rev"`
+	Error     string   `json:"error"`
+	Reason    string   `json:"reason"`
+	Revisions Revision `json:"_revisions"`
+}
+
+// Revision : The revision struct when calling the get document api with revs.
+type Revision struct {
+	Start int      `json:"start"`
+	IDS   []string `json:"ids"`
 }
 
 // CouchCandy : Struct that provides all CouchDB's API has to offer.
@@ -22,6 +29,15 @@ type CouchCandy struct {
 	GetHandler    func(string) (*http.Response, error)
 	PutHandler    func(string, string) (*http.Response, error)
 	DeleteHandler func(string) (*http.Response, error)
+}
+
+// Options : Options available when querying the database.
+type Options struct {
+	Revs        bool
+	Rev         string
+	Descending  bool
+	Limit       int
+	IncludeDocs bool
 }
 
 // NewCouchCandy : Returns a new CouchCandy struct initialised with the provided values.

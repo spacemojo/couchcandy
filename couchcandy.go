@@ -23,9 +23,9 @@ func (c *CouchCandy) GetDatabaseInfo() (*DatabaseInfo, error) {
 }
 
 // GetDocument : Returns the specified document in the passed database.
-func (c *CouchCandy) GetDocument(id string, v interface{}) error {
+func (c *CouchCandy) GetDocument(id string, v interface{}, options Options) error {
 
-	url := CreateDocumentURL(c.LclSession, id)
+	url := CreateDocumentURLWithOptions(c.LclSession, id, options)
 	page, err := c.readFromGet(url)
 	if err != nil {
 		return err
@@ -37,9 +37,9 @@ func (c *CouchCandy) GetDocument(id string, v interface{}) error {
 }
 
 // GetAllDocuments : Returns all documents in the database based on the passed parameters.
-func (c *CouchCandy) GetAllDocuments(descending bool, limit int, includeDocs bool) (*AllDocuments, error) {
+func (c *CouchCandy) GetAllDocuments(options Options) (*AllDocuments, error) {
 
-	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", CreateDatabaseURL(c.LclSession), descending, limit, includeDocs)
+	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", CreateDatabaseURL(c.LclSession), options.Descending, options.Limit, options.IncludeDocs)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err

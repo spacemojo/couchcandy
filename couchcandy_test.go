@@ -73,14 +73,18 @@ func TestGetDocument(t *testing.T) {
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBufferString(`{"_id":"053cc05f2ee97a0c91d276c9e700194b","_rev":"3-b96f323b37f19c4d1affddf3db3da9c5","type":"com.lendrapp.beans.UserProfile","shortProfile":{"id":null,"firstname":"Patrick","lastname":"Fitzgerald","email":"brun@email.com","organizationId":"053cc05f2ee97a0c91d276c9e700268f","password":"ee0c9435d5e2a07ceaa8abc829990dd3bdd15b7d6d3b0eaac100984da0841530"},"accountType":"PERSONAL","contacts":[]}`)),
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"_id":"053cc05f2ee97a0c91d276c9e700194b","_rev":"3-b96f323b37f19c4d1affddf3db3da9c5","type":"com.lendrapp.beans.UserProfile","shortProfile":{"id":null,"firstname":"Patrick","lastname":"Fitzgerald","email":"brun@email.com","organizationId":"053cc05f2ee97a0c91d276c9e700268f","password":"ee0c9435d5e2a07ceaa8abc829990dd3bdd15b7d6d3b0eaac100984da0841530"},"accountType":"PERSONAL","contacts":[],
+				"_revisions":{"start":3,"ids":["b96f323b37f19c4d1affddf3db3da9c5","bdeff0741cc1425e5f5b3829a7a9af2f","c76ae1eb708d6eb68974600995b98b70"]}}`)),
 		}
 		return response, nil
 	}
 
 	profile := &UserProfile{}
-	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile)
-	if err != nil || profile.ID != "053cc05f2ee97a0c91d276c9e700194b" {
+	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile, Options{
+		Revs: true,
+		Rev:  "3-b96f323b37f19c4d1affddf3db3da9c5",
+	})
+	if err != nil || profile.ID != "053cc05f2ee97a0c91d276c9e700194b" || len(profile.Revisions.IDS) != 3 {
 		t.Fail()
 	}
 
@@ -95,7 +99,10 @@ func TestGetDocumentFailure(t *testing.T) {
 	}
 
 	profile := &UserProfile{}
-	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile)
+	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile, Options{
+		Revs: false,
+		Rev:  "",
+	})
 	if err == nil {
 		t.Fail()
 	}
@@ -219,7 +226,11 @@ func TestGetAllDocuments(t *testing.T) {
 		return response, nil
 	}
 
-	allDocuments, err := couchcandy.GetAllDocuments(false, 5, false)
+	allDocuments, err := couchcandy.GetAllDocuments(Options{
+		Limit:       5,
+		IncludeDocs: false,
+		Descending:  false,
+	})
 	if err != nil {
 		t.Fail()
 	}
@@ -238,7 +249,11 @@ func TestGetAllDocumentsFailure(t *testing.T) {
 		return nil, fmt.Errorf("Deliberate error from the TestGetAllDocumentsFailure test")
 	}
 
-	_, err := couchcandy.GetAllDocuments(false, 5, false)
+	_, err := couchcandy.GetAllDocuments(Options{
+		Descending:  false,
+		Limit:       5,
+		IncludeDocs: false,
+	})
 	if err == nil {
 		t.Fail()
 	}

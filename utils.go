@@ -20,6 +20,14 @@ func CreateDocumentURL(session Session, id string) string {
 	return fmt.Sprintf("%s/%s", CreateDatabaseURL(session), id)
 }
 
+// CreateDocumentURLWithOptions : Creates the right URL to fetch the passed document in the passed database with the specified options.
+func CreateDocumentURLWithOptions(session Session, id string, options Options) string {
+	if options.Rev != "" {
+		return fmt.Sprintf("%s/?revs=%v&rev=%v", CreateDocumentURL(session, id), options.Revs, options.Rev)
+	}
+	return fmt.Sprintf("%s/?revs=%v", CreateDocumentURL(session, id), options.Revs)
+}
+
 // CreateAllDatabasesURL : Creates the URL that allows to fetch all the
 // database names in CouchDB
 func CreateAllDatabasesURL(session Session) string {
