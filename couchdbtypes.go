@@ -106,7 +106,12 @@ type AllDocuments struct {
 type Row struct {
 	ID    string `json:"id"`
 	Key   string `json:"key"`
-	Value string `json:"value"`
+	Value Value  `json:"value"`
+}
+
+// Value : The value returned in rows whilst calling CouchDB's _all_docs service.
+type Value struct {
+	REV string `json:"rev"`
 }
 
 // NewSession : creates a new session initialized with the passed values

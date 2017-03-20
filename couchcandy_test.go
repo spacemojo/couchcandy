@@ -219,6 +219,28 @@ func TestGetAllDocuments(t *testing.T) {
 		return response, nil
 	}
 
-	couchcandy.GetAllDocuments(false, 5, false)
+	allDocuments, err := couchcandy.GetAllDocuments(false, 5, false)
+	if err != nil {
+		t.Fail()
+	}
+
+	if len(allDocuments.Rows) != 5 {
+		t.Fail()
+	}
+
+}
+
+func TestGetAllDocumentsFailure(t *testing.T) {
+
+	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	couchcandy := NewCouchCandy(session)
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("Deliberate error from the TestGetAllDocumentsFailure test")
+	}
+
+	_, err := couchcandy.GetAllDocuments(false, 5, false)
+	if err == nil {
+		t.Fail()
+	}
 
 }
