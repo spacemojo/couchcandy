@@ -12,8 +12,13 @@ This is my first try at a GoLang project, be gentle.
 To get started : 
 
 ~~~~
-session := couchcandy.NewSession("http://[HOST_IP]", [PORT], "database", "username", "p@$$w0rD")
-client := couchcandy.NewCouchCandy(session)
+client := couchcandy.NewCouchCandy(Session{
+    Host:     "http://[HOST_IP]", [PORT],
+    Port:     5984,
+    Database: "database",
+    Username: "username",
+    Password: "p@$$w0rD",
+})
 ~~~~
 
 From there you can simply call the methods available in the couchcandy client. 

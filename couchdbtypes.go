@@ -129,14 +129,3 @@ type Row struct {
 type Value struct {
 	REV string `json:"rev"`
 }
-
-// NewSession : creates a new session initialized with the passed values
-func NewSession(host string, port int, database string, username string, password string) Session {
-	return Session{
-		Host:     host,
-		Port:     port,
-		Database: database,
-		Username: username,
-		Password: password,
-	}
-}

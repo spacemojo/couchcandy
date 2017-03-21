@@ -24,7 +24,9 @@ type ShortProfile struct {
 // TestCreateDatabaseURL : Tests the CreateDatabaseURL function.
 func TestCreateDatabaseURL(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "udb", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
+	}
 	expected := "http://test:gotest@127.0.0.1:5984/udb"
 	url := CreateDatabaseURL(session)
 	if url != expected {
@@ -35,7 +37,9 @@ func TestCreateDatabaseURL(t *testing.T) {
 
 func TestGetDatabaseInfo(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "udb", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
@@ -53,7 +57,9 @@ func TestGetDatabaseInfo(t *testing.T) {
 
 func TestGetDatabaseInfoFailure(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "udb", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("%s", "This is a deliberate error in unit tests (TestGetDatabaseInfoFailure)")
@@ -69,7 +75,9 @@ func TestGetDatabaseInfoFailure(t *testing.T) {
 
 func TestGetDocument(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
@@ -92,7 +100,9 @@ func TestGetDocument(t *testing.T) {
 
 func TestGetDocumentFailure(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestGetDocumentFailure()")
@@ -111,7 +121,9 @@ func TestGetDocumentFailure(t *testing.T) {
 
 func TestGetAllDatabases(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
@@ -130,7 +142,9 @@ func TestGetAllDatabases(t *testing.T) {
 
 func TestGetAllDatabasesFailure(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestGetAllDatabasesFailure()")
@@ -145,7 +159,9 @@ func TestGetAllDatabasesFailure(t *testing.T) {
 
 func TestPutDatabase(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
 		response := &http.Response{
@@ -163,7 +179,9 @@ func TestPutDatabase(t *testing.T) {
 
 func TestPutDatabaseFailure(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestPutDatabaseFailure()")
@@ -178,7 +196,9 @@ func TestPutDatabaseFailure(t *testing.T) {
 
 func TestDeleteDatabase(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
@@ -196,7 +216,9 @@ func TestDeleteDatabase(t *testing.T) {
 
 func TestDeleteDatabaseFailure(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestDeleteDatabaseFailure()")
@@ -211,7 +233,9 @@ func TestDeleteDatabaseFailure(t *testing.T) {
 
 func TestGetAllDocuments(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
@@ -243,8 +267,9 @@ func TestGetAllDocuments(t *testing.T) {
 
 func TestGetAllDocumentsFailure(t *testing.T) {
 
-	session := NewSession("http://127.0.0.1", 5984, "lendr", "test", "gotest")
-	couchcandy := NewCouchCandy(session)
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from the TestGetAllDocumentsFailure test")
 	}
