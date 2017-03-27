@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // GetDatabaseInfo returns basic information about the database in session.
@@ -225,5 +226,50 @@ func readFrom(url string, handler func(str string) (*http.Response, error)) ([]b
 	}
 
 	return page, nil
+
+}
+
+func defaultPostHandler(url string, body string) (*http.Response, error) {
+	return defaultHandlerWithBody(http.MethodPost, url, body)
+}
+
+func defaultPutHandler(url string, body string) (*http.Response, error) {
+	return defaultHandlerWithBody(http.MethodPut, url, body)
+}
+
+func defaultHandlerWithBody(method string, url string, body string) (*http.Response, error) {
+
+	request, requestError := http.NewRequest(method, url, strings.NewReader(body))
+	if requestError != nil {
+		return nil, requestError
+	}
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func defaultGetHandler(url string) (*http.Response, error) {
+	return defaultHandler(http.MethodGet, url)
+}
+
+func defaultDeleteHandler(url string) (*http.Response, error) {
+	return defaultHandler(http.MethodDelete, url)
+}
+
+func defaultHandler(method string, url string) (*http.Response, error) {
+
+	request, requestError := http.NewRequest(method, url, nil)
+	if requestError != nil {
+		return nil, requestError
+	}
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 
 }
