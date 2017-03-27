@@ -21,20 +21,6 @@ type ShortProfile struct {
 	Email     string `json:"email"`
 }
 
-// TestCreateDatabaseURL : Tests the CreateDatabaseURL function.
-func TestCreateDatabaseURL(t *testing.T) {
-
-	session := Session{
-		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
-	}
-	expected := "http://test:gotest@127.0.0.1:5984/udb"
-	url := CreateDatabaseURL(session)
-	if url != expected {
-		t.Fail()
-	}
-
-}
-
 func TestGetDatabaseInfo(t *testing.T) {
 
 	session := Session{
@@ -151,6 +137,166 @@ func TestGetAllDatabasesFailure(t *testing.T) {
 	}
 
 	_, err := couchcandy.GetAllDatabases()
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestGetChangeNotifications(t *testing.T) {
+
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
+	couchcandy := NewCouchCandy(session)
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"results":[
+				{"seq":19215,"id":"actama99","changes":[{"rev":"1-e860e99218e7c618f3510c48987d6ff0"}]},
+				{"seq":19217,"id":"adairbi99","changes":[{"rev":"1-6482114abc008f6ffab3979597fee898"}]},
+				{"seq":19993,"id":"armoubi99","changes":[{"rev":"1-4153c31bb3ae6d8553dab186df2b56a3"}]},
+				{"seq":20511,"id":"bancrfr99","changes":[{"rev":"1-a67c987380ff807d66308f28698ff0a3"}]},
+				{"seq":21679,"id":"bevinte99","changes":[{"rev":"1-9b613c97ee1e03850307ba3c8c36a206"}]},
+				{"seq":21697,"id":"bicke99","changes":[{"rev":"1-ca030dc5ace662abf26a3935a3715218"}]},
+				{"seq":22177,"id":"bolesjo99","changes":[{"rev":"1-2db4189915c80ed77fb572b0bbf6c03d"}]},
+				{"seq":22923,"id":"bristda99","changes":[{"rev":"1-68b20a0bbfd4abe63d359f2c52ac0e9c"}]}]}`)),
+		}
+		return response, nil
+	}
+
+	changes, _ := couchcandy.GetChangeNotifications(Options{
+		Style: MainOnly,
+	})
+	if len(changes.Results) != 8 {
+		t.Fail()
+	}
+
+}
+
+func TestGetChangeNotificationsFailure(t *testing.T) {
+
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
+	couchcandy := NewCouchCandy(session)
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("Deliberate error in TestGetChangeNotificationsFailure")
+	}
+
+	_, err := couchcandy.GetChangeNotifications(Options{
+		Style: MainOnly,
+	})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestPutDocumentWithID(t *testing.T) {
+
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
+
+	couchcandy := NewCouchCandy(session)
+	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"id":"1029384756", "rev":"1-b2b5fcc9f6ca0efcd401b9bc40f539cc", "ok": true}`)),
+		}
+		return response, nil
+	}
+
+	response, _ := couchcandy.PutDocumentWithID("1029384756", &ShortProfile{})
+	if !response.OK {
+		t.Fail()
+	}
+
+}
+
+func TestPutDocumentWithIDFailure(t *testing.T) {
+
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
+
+	couchcandy := NewCouchCandy(session)
+	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+		return nil, fmt.Errorf("Deliberate error thrown in TestPutDocumentWithIDFailure")
+	}
+
+	_, err := couchcandy.PutDocumentWithID("1029384756", &ShortProfile{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestPutDocument(t *testing.T) {
+
+	session := Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	}
+
+	couchcandy := NewCouchCandy(session)
+	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"id":"1029384756", "rev":"1-b2b5fcc9f6ca0efcd401b9bc40f539cc", "ok": true}`)),
+		}
+		return response, nil
+	}
+
+	response, _ := couchcandy.PutDocument(&ShortProfile{})
+	if !response.OK {
+		t.Fail()
+	}
+
+}
+
+func TestPutDocumentFailure(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+		return nil, fmt.Errorf("Deliberate error from TestPutDocumentFailure test")
+	}
+
+	_, err := couchcandy.PutDocument(&ShortProfile{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestPostDocument(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"id":"1029384756", "rev":"1-b2b5fcc9f6ca0efcd401b9bc40f539cc", "ok": true}`)),
+		}
+		return response, nil
+	}
+
+	response, _ := couchcandy.PostDocument(&ShortProfile{})
+	if !response.OK {
+		t.Fail()
+	}
+
+}
+
+func TestPostDocumentFailure(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+		return nil, fmt.Errorf("Deliberate error in TestPostDocumentFailure")
+	}
+
+	_, err := couchcandy.PostDocument(&ShortProfile{})
 	if err == nil {
 		t.Fail()
 	}

@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+const (
+	// MainOnly : used when getting notifications
+	MainOnly string = "main_only"
+	// AllDocs : used when getting notifications
+	AllDocs string = "all_docs"
+)
+
 // CandyDocument : struct for holding a CouchCandy document.
 // Not supposed to be used directly but is required to construct
 // your custom types since all documents in CouchDB have these
@@ -27,8 +34,27 @@ type Revision struct {
 type CouchCandy struct {
 	LclSession    Session
 	GetHandler    func(string) (*http.Response, error)
+	PostHandler   func(string, string) (*http.Response, error)
 	PutHandler    func(string, string) (*http.Response, error)
 	DeleteHandler func(string) (*http.Response, error)
+}
+
+// Changes : The struct returned by the call to get change notifications.
+type Changes struct {
+	Results []Result `json:"results"`
+	LastSeq int      `json:"last_seq"`
+}
+
+// Result : The struct representing a change result.
+type Result struct {
+	Seq     int      `json:"seq"`
+	ID      string   `json:"id"`
+	Changes []Change `json:"changes"`
+}
+
+// Change : The change itself, mainly a revision change on an id.
+type Change struct {
+	Rev string `json:"rev"`
 }
 
 // Options : Options available when querying the database.
@@ -38,21 +64,31 @@ type Options struct {
 	Descending  bool
 	Limit       int
 	IncludeDocs bool
+	Style       string
 }
 
 // NewCouchCandy : Returns a new CouchCandy struct initialised with the provided values.
 func NewCouchCandy(session Session) *CouchCandy {
 	return &CouchCandy{
 		LclSession:    session,
-		GetHandler:    http.Get,
+		GetHandler:    defaultGetHandler,
+		PostHandler:   defaultPostHandler,
 		PutHandler:    defaultPutHandler,
 		DeleteHandler: defaultDeleteHandler,
 	}
 }
 
-func defaultPutHandler(url string, body string) (*http.Response, error) {
+func defaultPostHandler(url string, body string) (*http.Response, error) {
+	return defaultHandlerWithBody(http.MethodPost, url, body)
+}
 
-	request, requestError := http.NewRequest(http.MethodPut, url, strings.NewReader(body))
+func defaultPutHandler(url string, body string) (*http.Response, error) {
+	return defaultHandlerWithBody(http.MethodPut, url, body)
+}
+
+func defaultHandlerWithBody(method string, url string, body string) (*http.Response, error) {
+
+	request, requestError := http.NewRequest(method, url, strings.NewReader(body))
 	if requestError != nil {
 		return nil, requestError
 	}
@@ -62,12 +98,19 @@ func defaultPutHandler(url string, body string) (*http.Response, error) {
 		return nil, err
 	}
 	return response, nil
+}
 
+func defaultGetHandler(url string) (*http.Response, error) {
+	return defaultHandler(http.MethodGet, url)
 }
 
 func defaultDeleteHandler(url string) (*http.Response, error) {
+	return defaultHandler(http.MethodDelete, url)
+}
 
-	request, requestError := http.NewRequest(http.MethodDelete, url, nil)
+func defaultHandler(method string, url string) (*http.Response, error) {
+
+	request, requestError := http.NewRequest(method, url, nil)
 	if requestError != nil {
 		return nil, requestError
 	}
@@ -97,9 +140,11 @@ type DatabaseInfo struct {
 
 // OperationResponse : Format of an operation response when a get is not emitted.
 type OperationResponse struct {
-	ID  string `json:"id"`
-	REV string `json:"rev"`
-	OK  bool   `json:"ok"`
+	ID     string `json:"id"`
+	REV    string `json:"rev"`
+	OK     bool   `json:"ok"`
+	Error  string `json:"error"`
+	Reason string `json:"reason"`
 }
 
 // Session : holds the connection data for a couchcandy session.
@@ -120,9 +165,10 @@ type AllDocuments struct {
 
 // Row : This is a row in the array of rows on the AllDocuments struc.
 type Row struct {
-	ID    string `json:"id"`
-	Key   string `json:"key"`
-	Value Value  `json:"value"`
+	ID    string      `json:"id"`
+	Key   string      `json:"key"`
+	Value Value       `json:"value"`
+	Doc   interface{} `json:"doc"`
 }
 
 // Value : The value returned in rows whilst calling CouchDB's _all_docs service.
