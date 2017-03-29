@@ -9,6 +9,12 @@ const (
 	AllDocs string = "all_docs"
 )
 
+// CandyHTTPClient Interface that describes a client that executes an
+// http request and produces an http response, and error if any.
+type CandyHTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // CandyDocument : struct for holding a CouchCandy document.
 // Not supposed to be used directly but is required to construct
 // your custom types since all documents in CouchDB have these

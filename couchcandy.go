@@ -12,7 +12,7 @@ import (
 func (c *CouchCandy) GetDatabaseInfo() (*DatabaseInfo, error) {
 
 	url := createDatabaseURL(c.LclSession)
-	page, err := c.readFromGet(url)
+	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (c *CouchCandy) GetDatabaseInfo() (*DatabaseInfo, error) {
 func (c *CouchCandy) GetDocument(id string, v interface{}, options Options) error {
 
 	url := createDocumentURLWithOptions(c.LclSession, id, options)
-	page, err := c.readFromGet(url)
+	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 		return nil, marshallError
 	}
 
-	page, err := c.readFromPost(url, string(body))
+	page, err := readFromWithBody(url, string(body), c.PostHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, erro
 		return nil, marshallError
 	}
 
-	page, err := c.readFromPut(url, string(body))
+	page, err := readFromWithBody(url, string(body), c.PutHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*Operat
 		return nil, marshallError
 	}
 
-	page, err := c.readFromPut(url, string(body))
+	page, err := readFromWithBody(url, string(body), c.PutHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (c *CouchCandy) PutDatabase(name string) (*OperationResponse, error) {
 	c.LclSession.Database = name
 	url := createDatabaseURL(c.LclSession)
 
-	page, err := c.readFromPut(url, "")
+	page, err := readFromWithBody(url, "", c.PutHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 
 	c.LclSession.Database = name
 	url := createDatabaseURL(c.LclSession)
-	page, err := c.readFromDelete(url)
+	page, err := readFrom(url, c.DeleteHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 
 	url := createAllDatabasesURL(c.LclSession)
-	page, err := c.readFromGet(url)
+	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 	url := fmt.Sprintf("%s/_changes?style=%s", createDatabaseURL(c.LclSession), options.Style)
-	page, err := c.readFromGet(url)
+	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -179,21 +179,9 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 }
 
-func (c *CouchCandy) readFromPut(url string, body string) ([]byte, error) {
-	return readFromWithBody(url, body, c.PutHandler)
-}
-
-func (c *CouchCandy) readFromPost(url string, body string) ([]byte, error) {
-	return readFromWithBody(url, body, c.PostHandler)
-}
-
-func (c *CouchCandy) readFromDelete(url string) ([]byte, error) {
-	return readFrom(url, c.DeleteHandler)
-}
-
-func (c *CouchCandy) readFromGet(url string) ([]byte, error) {
-	return readFrom(url, c.GetHandler)
-}
+// func (c *CouchCandy) readFromPut(url string, body string) ([]byte, error) {
+// 	return readFromWithBody(url, body, c.PutHandler)
+// }
 
 func readFromWithBody(url string, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
 
@@ -230,20 +218,20 @@ func readFrom(url string, handler func(str string) (*http.Response, error)) ([]b
 }
 
 func defaultPostHandler(url string, body string) (*http.Response, error) {
-	return defaultHandlerWithBody(http.MethodPost, url, body)
+	return defaultHandlerWithBody(http.MethodPost, url, body, &http.Client{})
 }
 
 func defaultPutHandler(url string, body string) (*http.Response, error) {
-	return defaultHandlerWithBody(http.MethodPut, url, body)
+	return defaultHandlerWithBody(http.MethodPut, url, body, &http.Client{})
 }
 
-func defaultHandlerWithBody(method string, url string, body string) (*http.Response, error) {
+func defaultHandlerWithBody(method, url, body string, client CandyHTTPClient) (*http.Response, error) {
 
 	request, requestError := http.NewRequest(method, url, strings.NewReader(body))
 	if requestError != nil {
 		return nil, requestError
 	}
-	client := &http.Client{}
+
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
@@ -252,20 +240,20 @@ func defaultHandlerWithBody(method string, url string, body string) (*http.Respo
 }
 
 func defaultGetHandler(url string) (*http.Response, error) {
-	return defaultHandler(http.MethodGet, url)
+	return defaultHandler(http.MethodGet, url, &http.Client{})
 }
 
 func defaultDeleteHandler(url string) (*http.Response, error) {
-	return defaultHandler(http.MethodDelete, url)
+	return defaultHandler(http.MethodDelete, url, &http.Client{})
 }
 
-func defaultHandler(method string, url string) (*http.Response, error) {
+func defaultHandler(method, url string, client CandyHTTPClient) (*http.Response, error) {
 
 	request, requestError := http.NewRequest(method, url, nil)
 	if requestError != nil {
 		return nil, requestError
 	}
-	client := &http.Client{}
+
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err

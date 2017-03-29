@@ -430,3 +430,78 @@ func TestGetAllDocumentsFailure(t *testing.T) {
 	}
 
 }
+
+type MockFailingHTTPClient struct{}
+
+func (m *MockFailingHTTPClient) Do(request *http.Request) (*http.Response, error) {
+	return nil, fmt.Errorf("Deliberate error from MockCandyHTTPClient.Do")
+}
+
+type MockRunningHTTPClient struct{}
+
+func (m *MockRunningHTTPClient) Do(request *http.Request) (*http.Response, error) {
+	response := &http.Response{
+		Body: ioutil.NopCloser(bytes.NewBufferString(`{"total_rows":20682,"offset":0,"rows":[
+		{"id":"ALB01","key":"ALB01","value":{"rev":"1-66a2e993bd32c834f4c2bb655b520c42"}},
+		{"id":"ALT","key":"ALT","value":{"rev":"2-70d3ae1a59ab2f5be945881afbf6243d"}},
+		{"id":"ALT01","key":"ALT01","value":{"rev":"1-d694d4e89aed0b02828d324b26d430c4"}},
+		{"id":"ANA","key":"ANA","value":{"rev":"57-bf879cbfc36d7e97e7ddc578f18d675e"}},
+		{"id":"ANA01","key":"ANA01","value":{"rev":"1-583301ed352ec7aaea11793618a2fdec"}}
+		]}`)),
+	}
+	return response, nil
+}
+
+func TestDefaultHandlerSuccess(t *testing.T) {
+
+	response, _ := defaultHandler(http.MethodGet, "http://127.0.0.1:5984/dbase", &MockRunningHTTPClient{})
+	if response == nil {
+		t.Fail()
+	}
+
+}
+
+func TestDefaultHandlerWithBodySuccess(t *testing.T) {
+
+	response, _ := defaultHandlerWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "This is the body for the post.", &MockRunningHTTPClient{})
+	if response == nil {
+		t.Fail()
+	}
+
+}
+
+func TestDefaultHandlerDoFail(t *testing.T) {
+
+	_, err := defaultHandler(http.MethodGet, "http://127.0.0.1:5984/dbase", &MockFailingHTTPClient{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestDefaultHandlerDoRequestFail(t *testing.T) {
+
+	_, err := defaultHandler("\n", "http://127.0.0.1:5984/dbase", &MockFailingHTTPClient{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestDefaultHandlerWithBodyDoFail(t *testing.T) {
+
+	_, err := defaultHandlerWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestDefaultHandlerWithBodyDoRequestFail(t *testing.T) {
+
+	_, err := defaultHandlerWithBody("\n", "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
