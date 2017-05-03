@@ -149,6 +149,21 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 
 }
 
+// DeleteDocument Deletes the passed document with revision from the database
+func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationResponse, error) {
+
+	url := fmt.Sprintf("%s?rev=%s", createDocumentURL(c.LclSession, id), revision)
+	page, err := readFrom(url, c.DeleteHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &OperationResponse{}
+	unmarshallError := json.Unmarshal(page, response)
+	return response, unmarshallError
+
+}
+
 // GetAllDatabases : Returns all the database names in the system.
 func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 
@@ -178,10 +193,6 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 	return changes, unmarshallError
 
 }
-
-// func (c *CouchCandy) readFromPut(url string, body string) ([]byte, error) {
-// 	return readFromWithBody(url, body, c.PutHandler)
-// }
 
 func readFromWithBody(url string, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
 

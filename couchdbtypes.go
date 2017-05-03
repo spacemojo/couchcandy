@@ -3,9 +3,9 @@ package couchcandy
 import "net/http"
 
 const (
-	// MainOnly : used when getting notifications
+	// MainOnly Used when getting notifications
 	MainOnly string = "main_only"
-	// AllDocs : used when getting notifications
+	// AllDocs Used when getting notifications
 	AllDocs string = "all_docs"
 )
 
@@ -15,10 +15,11 @@ type CandyHTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// CandyDocument : struct for holding a CouchCandy document.
+// CandyDocument Struct for holding a CouchDB document.
 // Not supposed to be used directly but is required to construct
 // your custom types since all documents in CouchDB have these
-// 2 attributes.
+// 2 attributes and the potential of having Error, Reason and
+// _revisions.
 type CandyDocument struct {
 	ID        string   `json:"_id"`
 	REV       string   `json:"_rev"`
@@ -27,13 +28,13 @@ type CandyDocument struct {
 	Revisions Revision `json:"_revisions"`
 }
 
-// Revision : The revision struct when calling the get document api with revs.
+// Revision The revision struct when calling the get document api with revs.
 type Revision struct {
 	Start int      `json:"start"`
 	IDS   []string `json:"ids"`
 }
 
-// CouchCandy : Struct that provides all CouchDB's API has to offer.
+// CouchCandy Struct that provides all CouchDB's API has to offer.
 type CouchCandy struct {
 	LclSession    Session
 	GetHandler    func(string) (*http.Response, error)
@@ -42,25 +43,31 @@ type CouchCandy struct {
 	DeleteHandler func(string) (*http.Response, error)
 }
 
-// Changes : The struct returned by the call to get change notifications.
+// Changes The struct returned by the call to get change notifications.
 type Changes struct {
 	Results []Result `json:"results"`
 	LastSeq int      `json:"last_seq"`
 }
 
-// Result : The struct representing a change result.
+// Result The struct representing a change result.
 type Result struct {
 	Seq     int      `json:"seq"`
 	ID      string   `json:"id"`
 	Changes []Change `json:"changes"`
 }
 
-// Change : The change itself, mainly a revision change on an id.
+// Change The change itself, mainly a revision change on an id.
 type Change struct {
 	Rev string `json:"rev"`
 }
 
-// Options : Options available when querying the database.
+// Options Options available when querying the database.
+// Revs : includes revisions or not
+// Rev : fetch a specific revision
+// Descending : sorting order for the keys
+// Limit : number of returned results
+// IncludeDocs : includes the whole document or not
+// Style :
 type Options struct {
 	Revs        bool
 	Rev         string
@@ -70,7 +77,7 @@ type Options struct {
 	Style       string
 }
 
-// NewCouchCandy : Returns a new CouchCandy struct initialised with the provided values.
+// NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.
 func NewCouchCandy(session Session) *CouchCandy {
 	return &CouchCandy{
 		LclSession:    session,
@@ -81,7 +88,7 @@ func NewCouchCandy(session Session) *CouchCandy {
 	}
 }
 
-// DatabaseInfo : Fetches basic information about a database.
+// DatabaseInfo Fetches basic information about a database.
 type DatabaseInfo struct {
 	DBName             string `json:"db_name"`
 	DocCount           int    `json:"doc_count"`
@@ -96,7 +103,7 @@ type DatabaseInfo struct {
 	CommittedUpdateSeq int    `json:"committed_update_seq"`
 }
 
-// OperationResponse : Format of an operation response when a get is not emitted.
+// OperationResponse Format of an operation response when a get is not emitted.
 type OperationResponse struct {
 	ID     string `json:"id"`
 	REV    string `json:"rev"`
@@ -105,7 +112,7 @@ type OperationResponse struct {
 	Reason string `json:"reason"`
 }
 
-// Session : holds the connection data for a couchcandy session.
+// Session holds the connection data for a couchcandy session.
 type Session struct {
 	Host     string
 	Port     int
@@ -114,14 +121,14 @@ type Session struct {
 	Password string
 }
 
-// AllDocuments : This struct contains the response to the all documents call.
+// AllDocuments This struct contains the response to the all documents call.
 type AllDocuments struct {
 	TotalRows int   `json:"total_rows"`
 	Offset    int   `json:"offset"`
 	Rows      []Row `json:"rows"`
 }
 
-// Row : This is a row in the array of rows on the AllDocuments struc.
+// Row This is a row in the array of rows on the AllDocuments struct.
 type Row struct {
 	ID    string      `json:"id"`
 	Key   string      `json:"key"`
@@ -129,7 +136,7 @@ type Row struct {
 	Doc   interface{} `json:"doc"`
 }
 
-// Value : The value returned in rows whilst calling CouchDB's _all_docs service.
+// Value The value returned in rows whilst calling CouchDB's _all_docs service.
 type Value struct {
 	REV string `json:"rev"`
 }
