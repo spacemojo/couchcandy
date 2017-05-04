@@ -42,13 +42,12 @@ func (c *CouchCandy) GetDocument(id string, v interface{}, options Options) erro
 func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, error) {
 
 	url := createDatabaseURL(c.LclSession)
-
-	body, marshallError := json.Marshal(document)
+	bodyStr, marshallError := safeMarshall(document)
 	if marshallError != nil {
 		return nil, marshallError
 	}
 
-	page, err := readFromWithBody(url, string(body), c.PostHandler)
+	page, err := readFromWithBody(url, bodyStr, c.PostHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +63,12 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, error) {
 
 	url := createDatabaseURL(c.LclSession)
-	body, marshallError := json.Marshal(document)
+	bodyStr, marshallError := safeMarshall(document)
 	if marshallError != nil {
 		return nil, marshallError
 	}
 
-	page, err := readFromWithBody(url, string(body), c.PutHandler)
+	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -80,17 +79,27 @@ func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, erro
 
 }
 
+// this is a violent hack to set the Revisions field to nil so that it does no get marshalled initially.
+func safeMarshall(document interface{}) (string, error) {
+	body, err := json.Marshal(document)
+	if err != nil {
+		return "", err
+	}
+	bodyStr := strings.Replace(string(body), "\"_revisions\":{\"start\":0,\"ids\":null},", "", -1)
+	return bodyStr, nil
+}
+
 // PutDocumentWithID Inserts a document in the database with the specified id
 func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*OperationResponse, error) {
 
 	url := fmt.Sprintf("%s/%s", createDatabaseURL(c.LclSession), id)
 
-	body, marshallError := json.Marshal(document)
+	bodyStr, marshallError := safeMarshall(document)
 	if marshallError != nil {
 		return nil, marshallError
 	}
 
-	page, err := readFromWithBody(url, string(body), c.PutHandler)
+	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +247,11 @@ func defaultPutHandler(url string, body string) (*http.Response, error) {
 
 func defaultHandlerWithBody(method, url, body string, client CandyHTTPClient) (*http.Response, error) {
 
-	request, requestError := http.NewRequest(method, url, strings.NewReader(body))
+	bodyJson := strings.NewReader(body)
+	fmt.Printf("JSON BODY : %s\n", bodyJson)
+
+	request, requestError := http.NewRequest(method, url, bodyJson)
+	request.Header.Add("Content-Type", "application/json")
 	if requestError != nil {
 		return nil, requestError
 	}
