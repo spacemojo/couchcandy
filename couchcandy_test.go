@@ -23,10 +23,9 @@ type ShortProfile struct {
 
 func TestGetDatabaseInfo(t *testing.T) {
 
-	session := Session{
+	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
-	}
-	couchcandy := NewCouchCandy(session)
+	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"db_name":"udb","doc_count":20682,"doc_del_count":0,"update_seq":211591,"purge_seq":0,"compact_running":false,"disk_size":1210183793,"data_size":32983628,"instance_start_time":"0","disk_format_version":6,"committed_update_seq":211591}`)),
@@ -43,10 +42,9 @@ func TestGetDatabaseInfo(t *testing.T) {
 
 func TestGetDatabaseInfoFailure(t *testing.T) {
 
-	session := Session{
+	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
-	}
-	couchcandy := NewCouchCandy(session)
+	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("%s", "This is a deliberate error in unit tests (TestGetDatabaseInfoFailure)")
 	}
@@ -61,10 +59,9 @@ func TestGetDatabaseInfoFailure(t *testing.T) {
 
 func TestGetDocument(t *testing.T) {
 
-	session := Session{
+	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
-	}
-	couchcandy := NewCouchCandy(session)
+	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"_id":"053cc05f2ee97a0c91d276c9e700194b","_rev":"3-b96f323b37f19c4d1affddf3db3da9c5","type":"com.lendrapp.beans.UserProfile","shortProfile":{"id":null,"firstname":"Patrick","lastname":"Fitzgerald","email":"brun@email.com","organizationId":"053cc05f2ee97a0c91d276c9e700268f","password":"ee0c9435d5e2a07ceaa8abc829990dd3bdd15b7d6d3b0eaac100984da0841530"},"accountType":"PERSONAL","contacts":[],
@@ -86,10 +83,9 @@ func TestGetDocument(t *testing.T) {
 
 func TestGetDocumentFailure(t *testing.T) {
 
-	session := Session{
+	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
-	}
-	couchcandy := NewCouchCandy(session)
+	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestGetDocumentFailure()")
 	}
@@ -100,6 +96,28 @@ func TestGetDocumentFailure(t *testing.T) {
 		Rev:  "",
 	})
 	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestDeleteDocumentSuccess(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"_id":"053cc05f2ee97a0c91d276c9e700194b","_rev":"3-b96f323b37f19c4d1affddf3db3da9c5","ok":true}`)),
+		}
+		return response, nil
+	}
+
+	response, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
+	if err != nil {
+		t.Fail()
+	}
+	if !response.OK {
 		t.Fail()
 	}
 
