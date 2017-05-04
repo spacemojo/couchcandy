@@ -499,7 +499,7 @@ func TestDefaultHandlerWithBodyDoFail(t *testing.T) {
 
 func TestDefaultHandlerWithBodyDoRequestFail(t *testing.T) {
 
-	_, err := defaultHandlerWithBody("\n", "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
+	_, err := defaultHandlerWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
 	if err == nil {
 		t.Fail()
 	}
