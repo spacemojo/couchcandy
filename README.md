@@ -2,6 +2,7 @@
 
 *Go client for Apache CouchDB* 
 
+[![License][License-Image]][License-URL]
 [![Go Report Card](https://goreportcard.com/badge/github.com/spacemojo/couchcandy)](https://goreportcard.com/report/github.com/spacemojo/couchcandy)
 [![Build Status](https://travis-ci.org/spacemojo/couchcandy.svg?branch=master)](https://travis-ci.org/spacemojo/couchcandy)
 [![codecov](https://codecov.io/gh/spacemojo/couchcandy/branch/master/graph/badge.svg)](https://codecov.io/gh/spacemojo/couchcandy)
