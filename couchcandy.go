@@ -56,12 +56,20 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 
 }
 
+func toCandyDocument(str string) *CandyDocument {
+	doc := &CandyDocument{}
+	json.Unmarshal([]byte(str), doc)
+	return doc
+}
+
 // PutDocument Updates a document in the database. Note that _id and _rev
 // fields are required in the passed document.
 func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, error) {
 
-	url := createDatabaseURL(c.LclSession)
 	bodyStr, marshallError := safeMarshall(document)
+	candyDoc := toCandyDocument(bodyStr)
+	url := fmt.Sprintf("%s/%s", createDatabaseURL(c.LclSession), candyDoc.ID)
+
 	if marshallError != nil {
 		return nil, marshallError
 	}
@@ -241,15 +249,13 @@ func defaultPutHandler(url string, body string) (*http.Response, error) {
 
 func defaultHandlerWithBody(method, url, body string, client CandyHTTPClient) (*http.Response, error) {
 
-	bodyJson := strings.NewReader(body)
-	fmt.Printf("JSON BODY : %s\n", bodyJson)
-
-	request, requestError := http.NewRequest(method, url, bodyJson)
-	request.Header.Add("Content-Type", "application/json")
+	bodyJSON := strings.NewReader(body)
+	request, requestError := http.NewRequest(method, url, bodyJSON)
 	if requestError != nil {
 		return nil, requestError
 	}
 
+	request.Header.Add("Content-Type", "application/json")
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
