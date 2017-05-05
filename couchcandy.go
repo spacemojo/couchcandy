@@ -52,9 +52,7 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 		return nil, err
 	}
 
-	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	return produceOperationResponse(page)
 
 }
 
@@ -73,20 +71,8 @@ func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, erro
 		return nil, err
 	}
 
-	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	return produceOperationResponse(page)
 
-}
-
-// this is a violent hack to set the Revisions field to nil so that it does no get marshalled initially.
-func safeMarshall(document interface{}) (string, error) {
-	body, err := json.Marshal(document)
-	if err != nil {
-		return "", err
-	}
-	bodyStr := strings.Replace(string(body), "\"_revisions\":{\"start\":0,\"ids\":null},", "", -1)
-	return bodyStr, nil
 }
 
 // PutDocumentWithID Inserts a document in the database with the specified id
@@ -104,9 +90,7 @@ func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*Operat
 		return nil, err
 	}
 
-	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	return produceOperationResponse(page)
 
 }
 
@@ -136,9 +120,7 @@ func (c *CouchCandy) PutDatabase(name string) (*OperationResponse, error) {
 		return nil, err
 	}
 
-	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	return produceOperationResponse(page)
 
 }
 
@@ -152,9 +134,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 		return nil, err
 	}
 
-	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	return produceOperationResponse(page)
 
 }
 
@@ -167,9 +147,7 @@ func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationRespo
 		return nil, err
 	}
 
-	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	return produceOperationResponse(page)
 
 }
 
@@ -201,6 +179,22 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 	unmarshallError := json.Unmarshal(page, changes)
 	return changes, unmarshallError
 
+}
+
+func produceOperationResponse(page []byte) (*OperationResponse, error) {
+	response := &OperationResponse{}
+	unmarshallError := json.Unmarshal(page, response)
+	return response, unmarshallError
+}
+
+// this is a violent hack to set the Revisions field to nil so that it does no get marshalled initially.
+func safeMarshall(document interface{}) (string, error) {
+	body, err := json.Marshal(document)
+	if err != nil {
+		return "", err
+	}
+	bodyStr := strings.Replace(string(body), "\"_revisions\":{\"start\":0,\"ids\":null},", "", -1)
+	return bodyStr, nil
 }
 
 func readFromWithBody(url string, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
