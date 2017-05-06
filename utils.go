@@ -13,6 +13,14 @@ func createDatabaseURL(session Session) string {
 	return fmt.Sprintf("%s/%s", createBaseURL(session), session.Database)
 }
 
+func createPutDocumentURL(session Session, body string) string {
+	candyDoc, toCandyError := toCandyDocument(body)
+	if toCandyError != nil {
+		return ""
+	}
+	return createDocumentURL(session, candyDoc.ID)
+}
+
 func createDocumentURL(session Session, id string) string {
 	return fmt.Sprintf("%s/%s", createDatabaseURL(session), id)
 }

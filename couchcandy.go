@@ -56,10 +56,10 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 
 }
 
-func toCandyDocument(str string) *CandyDocument {
+func toCandyDocument(str string) (*CandyDocument, error) {
 	doc := &CandyDocument{}
-	json.Unmarshal([]byte(str), doc)
-	return doc
+	err := json.Unmarshal([]byte(str), doc)
+	return doc, err
 }
 
 // PutDocument Updates a document in the database. Note that _id and _rev
@@ -67,12 +67,11 @@ func toCandyDocument(str string) *CandyDocument {
 func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, error) {
 
 	bodyStr, marshallError := safeMarshall(document)
-	candyDoc := toCandyDocument(bodyStr)
-	url := fmt.Sprintf("%s/%s", createDatabaseURL(c.LclSession), candyDoc.ID)
-
 	if marshallError != nil {
 		return nil, marshallError
 	}
+
+	url := createPutDocumentURL(c.LclSession, bodyStr)
 
 	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
 	if err != nil {
