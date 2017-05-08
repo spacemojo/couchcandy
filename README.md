@@ -14,8 +14,8 @@ To get started :
 
 ```
 client := couchcandy.NewCouchCandy(Session{
-    Host:     "http://[HOST_IP]", [PORT],
-    Port:     5984,
+    Host:     "http://[HOST_IP]",
+    Port:     [PORT],
     Database: "database",
     Username: "username",
     Password: "p@$$w0rD",
