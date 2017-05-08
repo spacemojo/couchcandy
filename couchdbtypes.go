@@ -140,3 +140,9 @@ type Row struct {
 type Value struct {
 	REV string `json:"rev"`
 }
+
+// AllDocumentsKeys Is used when fetching documents by keys. This struct is passed
+// as a POST parameter.
+type AllDocumentsKeys struct {
+	keys []string `json:"keys"`
+}

@@ -52,7 +52,7 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 		return nil, err
 	}
 
-	return produceOperationResponse(page)
+	return toOperationResponse(page)
 
 }
 
@@ -78,7 +78,7 @@ func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, erro
 		return nil, err
 	}
 
-	return produceOperationResponse(page)
+	return toOperationResponse(page)
 
 }
 
@@ -97,22 +97,55 @@ func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*Operat
 		return nil, err
 	}
 
-	return produceOperationResponse(page)
+	return toOperationResponse(page)
 
+}
+
+func checkOptionsForAllDocuments(options *Options) {
+	if options.Limit == 0 {
+		options.Limit = 10
+	}
+}
+
+func toAllDocuments(page []byte) (*AllDocuments, error) {
+	allDocuments := &AllDocuments{}
+	unmarshallError := json.Unmarshal(page, allDocuments)
+	return allDocuments, unmarshallError
 }
 
 // GetAllDocuments : Returns all documents in the database based on the passed parameters.
 func (c *CouchCandy) GetAllDocuments(options Options) (*AllDocuments, error) {
 
+	checkOptionsForAllDocuments(&options)
 	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", createDatabaseURL(c.LclSession), options.Descending, options.Limit, options.IncludeDocs)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
 	}
 
-	allDocuments := &AllDocuments{}
-	unmarshallError := json.Unmarshal(page, allDocuments)
-	return allDocuments, unmarshallError
+	return toAllDocuments(page)
+
+}
+
+// GetDocumentsByKeys Fetches all the documents corresponding to the passed keys array.
+func (c *CouchCandy) GetDocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
+
+	checkOptionsForAllDocuments(&options)
+	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", createDatabaseURL(c.LclSession), options.Descending, options.Limit, options.IncludeDocs)
+
+	body, marhsallError := json.Marshal(&AllDocumentsKeys{
+		keys: keys,
+	})
+	if marhsallError != nil {
+		return nil, marhsallError
+	}
+
+	page, err := readFromWithBody(url, string(body), c.PostHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	return toAllDocuments(page)
 
 }
 
@@ -127,7 +160,7 @@ func (c *CouchCandy) PutDatabase(name string) (*OperationResponse, error) {
 		return nil, err
 	}
 
-	return produceOperationResponse(page)
+	return toOperationResponse(page)
 
 }
 
@@ -141,7 +174,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 		return nil, err
 	}
 
-	return produceOperationResponse(page)
+	return toOperationResponse(page)
 
 }
 
@@ -154,7 +187,7 @@ func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationRespo
 		return nil, err
 	}
 
-	return produceOperationResponse(page)
+	return toOperationResponse(page)
 
 }
 
@@ -188,7 +221,7 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 }
 
-func produceOperationResponse(page []byte) (*OperationResponse, error) {
+func toOperationResponse(page []byte) (*OperationResponse, error) {
 	response := &OperationResponse{}
 	unmarshallError := json.Unmarshal(page, response)
 	return response, unmarshallError
