@@ -395,13 +395,70 @@ func TestDeleteDatabaseFailure(t *testing.T) {
 
 }
 
+func TestGetDocumentsByKeys(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
+	})
+	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{
+			"total_rows": 5,
+			"offset": 0,
+			"rows": [
+				{
+				"id": "1e469de5e70bef8ba57bb5a507cb3cdd",
+				"key": "1e469de5e70bef8ba57bb5a507cb3cdd",
+				"value": {
+					"rev": "5-6ea4f8158560ab4148be647ba28b8572"
+				},
+				"doc": {
+					"_id": "1e469de5e70bef8ba57bb5a507cb3cdd",
+					"_rev": "5-6ea4f8158560ab4148be647ba28b8572",
+					"firstname": "Charles",
+					"lastname": "Darwin",
+					"email": "chuck@email.com",
+					"status": 4
+				}
+				},
+				{
+				"id": "d902c7a42d5c4780af9d7dd3910953a0",
+				"key": "d902c7a42d5c4780af9d7dd3910953a0",
+				"value": {
+					"rev": "1-ac7c71c07efd52e196e7470c9a75f3d7"
+				},
+				"doc": {
+					"_id": "d902c7a42d5c4780af9d7dd3910953a0",
+					"_rev": "1-ac7c71c07efd52e196e7470c9a75f3d7",
+					"firstname": "Jack",
+					"lastname": "Donnaghy",
+					"email": "jackattack@email.com",
+					"status": 6
+				}
+				}
+			]
+			}`)),
+		}
+		return response, nil
+	}
+
+	allDocuments, err := couchcandy.GetDocumentsByKeys([]string{"Penn", "Teller"}, Options{IncludeDocs: true, Limit: 10})
+	if err != nil {
+		t.Fail()
+	}
+	if len(allDocuments.Rows) != 2 {
+		t.Fail()
+	}
+
+}
+
 func TestGetAllDocuments(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.GetHandler = func(string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"total_rows":20682,"offset":0,"rows":[
 			{"id":"ALB01","key":"ALB01","value":{"rev":"1-66a2e993bd32c834f4c2bb655b520c42"}},
