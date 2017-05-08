@@ -601,3 +601,13 @@ func TestCheckOptionsForAllDocuments(t *testing.T) {
 	}
 
 }
+
+func TestSafeMarshalError(t *testing.T) {
+
+	value := make(map[int]int)
+	_, err := safeMarshall(value)
+	if err != nil {
+		t.Fail()
+	}
+
+}
