@@ -12,7 +12,7 @@ This is my first try at a GoLang project, be gentle.
 
 To get started : 
 
-```go
+```
 client := couchcandy.NewCouchCandy(Session{
     Host:     "http://[HOST_IP]", [PORT],
     Port:     5984,
@@ -24,13 +24,13 @@ client := couchcandy.NewCouchCandy(Session{
 
 From there you can simply call the methods available in the couchcandy client. 
 
-```go
+```
 info, err := client.GetDatabaseInfo()
 ```
 
 The returned info object is structured as such : 
 
-```go
+```
 type DatabaseInfo struct {
 	DBName             string `json:"db_name"`
 	DocCount           int    `json:"doc_count"`
