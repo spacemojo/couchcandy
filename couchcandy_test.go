@@ -580,3 +580,24 @@ func TestDefaultHandlerWithBodyDoRequestFail(t *testing.T) {
 	}
 
 }
+
+func TestCreatePutDocumentURL(t *testing.T) {
+
+	url := createPutDocumentURL(Session{}, "{badBodyFormat}")
+	if url != "" {
+		t.Fail()
+	}
+
+}
+
+func TestCheckOptionsForAllDocuments(t *testing.T) {
+
+	options := &Options{
+		Limit: 0,
+	}
+	checkOptionsForAllDocuments(options)
+	if options.Limit != 10 {
+		t.Fail()
+	}
+
+}
