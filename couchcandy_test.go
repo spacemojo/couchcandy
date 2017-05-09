@@ -604,9 +604,9 @@ func TestCheckOptionsForAllDocuments(t *testing.T) {
 
 func TestSafeMarshalError(t *testing.T) {
 
-	value := make(map[int]int)
+	value := make(chan int)
 	_, err := safeMarshall(value)
-	if err != nil {
+	if err == nil {
 		t.Fail()
 	}
 
