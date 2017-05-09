@@ -249,6 +249,19 @@ func TestPutDocumentWithIDFailure(t *testing.T) {
 
 }
 
+func TestPutDocumentWithIDMarshalError(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	value := make(chan int)
+	_, err := couchcandy.PutDocumentWithID("102938", value)
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
 func TestPutDocument(t *testing.T) {
 
 	session := Session{
@@ -286,6 +299,19 @@ func TestPutDocumentFailure(t *testing.T) {
 
 }
 
+func TestPutDocumentMarshalError(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	value := make(chan int)
+	_, err := couchcandy.PutDocument(value)
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
 func TestPostDocument(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
@@ -315,6 +341,19 @@ func TestPostDocumentFailure(t *testing.T) {
 	}
 
 	_, err := couchcandy.PostDocument(&ShortProfile{})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestPostDocumentMarshalError(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	value := make(chan int)
+	_, err := couchcandy.PostDocument(value)
 	if err == nil {
 		t.Fail()
 	}
