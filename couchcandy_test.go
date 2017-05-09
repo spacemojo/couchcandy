@@ -123,6 +123,22 @@ func TestDeleteDocumentSuccess(t *testing.T) {
 
 }
 
+func TestDeleteDocumentFailure(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+		return nil, fmt.Errorf("an error occured when deleting the document")
+	}
+
+	_, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
 func TestGetAllDatabases(t *testing.T) {
 
 	session := Session{
