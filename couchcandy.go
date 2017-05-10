@@ -203,7 +203,7 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 }
 
-func readFromWithBody(url string, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
+func readFromWithBody(url, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
 
 	res, err := handler(url, body)
 	if err != nil {
@@ -237,11 +237,11 @@ func readFrom(url string, handler func(str string) (*http.Response, error)) ([]b
 
 }
 
-func defaultPostHandler(url string, body string) (*http.Response, error) {
+func defaultPostHandler(url, body string) (*http.Response, error) {
 	return defaultHandlerWithBody(http.MethodPost, url, body, &http.Client{})
 }
 
-func defaultPutHandler(url string, body string) (*http.Response, error) {
+func defaultPutHandler(url, body string) (*http.Response, error) {
 	return defaultHandlerWithBody(http.MethodPut, url, body, &http.Client{})
 }
 
