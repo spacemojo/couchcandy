@@ -577,6 +577,36 @@ func TestGetAllDocumentsFailure(t *testing.T) {
 
 }
 
+func TestCallMapFunction(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.GetHandler = func(string) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"total_rows":52,"offset":39,"rows":[
+			{"id":"899b677618b95aad18fae36b6c000310","key":"spades","value":{"_id":"899b677618b95aad18fae36b6c000310","_rev":"1-628016c8a8a997b20359cd5eec8cfd1b","id":"1-spades","suit":"spades","numericValue":1,"name":"Ace","color":"black"}},
+			{"id":"899b677618b95aad18fae36b6c000863","key":"spades","value":{"_id":"899b677618b95aad18fae36b6c000863","_rev":"1-86de6dd4a207c2aa28a12340fb397481","id":"2-spades","suit":"spades","numericValue":2,"name":"Two","color":"black"}},
+			{"id":"899b677618b95aad18fae36b6c000f45","key":"spades","value":{"_id":"899b677618b95aad18fae36b6c000f45","_rev":"1-9631dd8c00dc96311982bd31ad162090","id":"3-spades","suit":"spades","numericValue":3,"name":"Three","color":"black"}}
+			]}`)),
+		}
+		return response, nil
+	}
+
+	docs, err := couchcandy.CallMap("cards", "by_suit", Options{
+		Limit:       3,
+		IncludeDocs: true,
+	})
+
+	if err != nil {
+		t.Fail()
+	}
+	if len(docs.Rows) != 3 {
+		t.Fail()
+	}
+
+}
+
 type MockFailingHTTPClient struct{}
 
 func (m *MockFailingHTTPClient) Do(request *http.Request) (*http.Response, error) {

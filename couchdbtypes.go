@@ -75,6 +75,7 @@ type Options struct {
 	Limit       int
 	IncludeDocs bool
 	Style       string
+	Key         string
 }
 
 // NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.

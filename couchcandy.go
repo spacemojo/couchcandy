@@ -200,6 +200,20 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 }
 
+// CallMap : Calls the passed map function with provided options
+func (c *CouchCandy) CallMap(ddoc, view string, options Options) (*AllDocuments, error) {
+
+	checkOptionsForAllDocuments(&options)
+	url := fmt.Sprintf("%s/_design/%s/_view/%s?key=\"%s\"&include_docs=%v&limit=%d", createDatabaseURL(c.LclSession), ddoc, view, options.Key, options.IncludeDocs, options.Limit)
+	page, err := readFrom(url, c.GetHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	return toAllDocuments(page)
+
+}
+
 func readFromWithBody(url, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
 
 	res, err := handler(url, body)
