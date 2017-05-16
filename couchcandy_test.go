@@ -507,6 +507,22 @@ func TestGetDocumentsByKeys(t *testing.T) {
 
 }
 
+func TestGetDocumentsByKeysFailure(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
+	})
+	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+		return nil, fmt.Errorf("An error occured when fetching documents by keys")
+	}
+
+	_, err := couchcandy.GetDocumentsByKeys([]string{""}, Options{IncludeDocs: true, Limit: 10})
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
 func TestGetAllDocuments(t *testing.T) {
 
 	session := Session{

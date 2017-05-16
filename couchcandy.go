@@ -115,12 +115,9 @@ func (c *CouchCandy) GetDocumentsByKeys(keys []string, options Options) (*AllDoc
 	checkOptionsForAllDocuments(&options)
 	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", createDatabaseURL(c.LclSession), options.Descending, options.Limit, options.IncludeDocs)
 
-	body, marhsallError := json.Marshal(&AllDocumentsKeys{
+	body, _ := json.Marshal(&AllDocumentsKeys{
 		keys: keys,
 	})
-	if marhsallError != nil {
-		return nil, marhsallError
-	}
 
 	page, err := readFromWithBody(url, string(body), c.PostHandler)
 	if err != nil {
