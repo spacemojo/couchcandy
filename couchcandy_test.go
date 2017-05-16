@@ -607,6 +607,26 @@ func TestCallMapFunction(t *testing.T) {
 
 }
 
+func TestCallMapFunctionFailure(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.GetHandler = func(string) (*http.Response, error) {
+		return nil, fmt.Errorf("an error occured whilst calling the map function")
+	}
+
+	docs, err := couchcandy.CallMap("cards", "by_suit", Options{})
+
+	if err == nil {
+		t.Fail()
+	}
+	if docs != nil {
+		t.Fail()
+	}
+
+}
+
 type MockFailingHTTPClient struct{}
 
 func (m *MockFailingHTTPClient) Do(request *http.Request) (*http.Response, error) {
