@@ -208,7 +208,7 @@ func readFromWithBody(url, body string, handler func(str string, bd string) (*ht
 	}
 
 	page, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	defer res.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func readFrom(url string, handler func(str string) (*http.Response, error)) ([]b
 	}
 
 	page, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	defer res.Body.Close()
 	if err != nil {
 		return nil, err
 	}
