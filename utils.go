@@ -1,6 +1,7 @@
 package couchcandy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -44,10 +45,10 @@ func toCandyDocument(str string) (*CandyDocument, error) {
 	return doc, err
 }
 
-func checkOptionsForAllDocuments(options *Options) {
-	if options.Limit == 0 {
-		options.Limit = 10
-	}
+func toViewResponse(page []byte) (*ViewResponse, error) {
+	viewResponse := &ViewResponse{}
+	unmarshallError := json.Unmarshal(page, viewResponse)
+	return viewResponse, unmarshallError
 }
 
 func toAllDocuments(page []byte) (*AllDocuments, error) {
@@ -70,4 +71,45 @@ func safeMarshall(document interface{}) (string, error) {
 	}
 	bodyStr := strings.Replace(string(body), "\"_revisions\":{\"start\":0,\"ids\":null},", "", -1)
 	return bodyStr, nil
+}
+
+func toQueryString(options Options) string {
+
+	parameters := toParameters(options)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	buffer.WriteString("?")
+
+	for _, parameter := range parameters {
+		buffer.WriteString(parameter)
+		buffer.WriteString("&")
+	}
+
+	return buffer.String()[0 : buffer.Len()-1]
+
+}
+
+func toParameters(options Options) []string {
+
+	parameters := make([]string, 0)
+
+	parameters = append(parameters, fmt.Sprintf("descending=%v", options.Descending))
+	parameters = append(parameters, fmt.Sprintf("include_docs=%v", options.IncludeDocs))
+	parameters = append(parameters, fmt.Sprintf("reduce=%v", options.Reduce))
+	if options.Limit != 0 {
+		parameters = append(parameters, fmt.Sprintf("limit=%v", options.Limit))
+	}
+	if options.Key != "" {
+		parameters = append(parameters, fmt.Sprintf("key=%s", options.Key))
+	}
+	if options.StartKey != "" {
+		parameters = append(parameters, fmt.Sprintf("start_key=%s", options.StartKey))
+	}
+	if options.EndKey != "" {
+		parameters = append(parameters, fmt.Sprintf("end_key=%s", options.EndKey))
+	}
+	if options.GroupLevel != 0 {
+		parameters = append(parameters, fmt.Sprintf("group_level=%v", options.GroupLevel))
+	}
+	return parameters
+
 }

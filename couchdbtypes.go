@@ -30,8 +30,8 @@ type CandyDocument struct {
 
 // Revision The revision struct when calling the get document api with revs.
 type Revision struct {
-	Start int      `json:"start"`
-	IDS   []string `json:"ids"`
+	Start int      `json:"start,omitempty"`
+	IDS   []string `json:"ids,omitempty"`
 }
 
 // CouchCandy Struct that provides all CouchDB's API has to offer.
@@ -45,20 +45,20 @@ type CouchCandy struct {
 
 // Changes The struct returned by the call to get change notifications.
 type Changes struct {
-	Results []Result `json:"results"`
-	LastSeq int      `json:"last_seq"`
+	Results []Result `json:"results,omitempty"`
+	LastSeq int      `json:"last_seq,omitempty"`
 }
 
 // Result The struct representing a change result.
 type Result struct {
-	Seq     int      `json:"seq"`
-	ID      string   `json:"id"`
-	Changes []Change `json:"changes"`
+	Seq     int      `json:"seq,omitempty"`
+	ID      string   `json:"id,omitempty"`
+	Changes []Change `json:"changes,omitempty"`
 }
 
 // Change The change itself, mainly a revision change on an id.
 type Change struct {
-	Rev string `json:"rev"`
+	Rev string `json:"rev,omitempty"`
 }
 
 // Options Options available when querying the database.
@@ -76,6 +76,10 @@ type Options struct {
 	IncludeDocs bool
 	Style       string
 	Key         string
+	StartKey    string
+	EndKey      string
+	Reduce      bool
+	GroupLevel  int
 }
 
 // NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.
@@ -91,26 +95,26 @@ func NewCouchCandy(session Session) *CouchCandy {
 
 // DatabaseInfo Fetches basic information about a database.
 type DatabaseInfo struct {
-	DBName             string `json:"db_name"`
-	DocCount           int    `json:"doc_count"`
-	DocDelCount        int    `json:"doc_del_count"`
-	UpdateSeq          int    `json:"update_seq"`
-	PurgeSeq           int    `json:"purge_seq"`
-	CompactRunning     bool   `json:"compact_running"`
-	DiskSize           int    `json:"disk_size"`
-	DataSize           int    `json:"data_size"`
-	InstanceStartTime  string `json:"instance_start_time"`
-	DiskFormatVersion  int    `json:"disk_format_version"`
-	CommittedUpdateSeq int    `json:"committed_update_seq"`
+	DBName             string `json:"db_name,omitempty"`
+	DocCount           int    `json:"doc_count,omitempty"`
+	DocDelCount        int    `json:"doc_del_count,omitempty"`
+	UpdateSeq          int    `json:"update_seq,omitempty"`
+	PurgeSeq           int    `json:"purge_seq,omitempty"`
+	CompactRunning     bool   `json:"compact_running,omitempty"`
+	DiskSize           int    `json:"disk_size,omitempty"`
+	DataSize           int    `json:"data_size,omitempty"`
+	InstanceStartTime  string `json:"instance_start_time,omitempty"`
+	DiskFormatVersion  int    `json:"disk_format_version,omitempty"`
+	CommittedUpdateSeq int    `json:"committed_update_seq,omitempty"`
 }
 
 // OperationResponse Format of an operation response when a get is not emitted.
 type OperationResponse struct {
-	ID     string `json:"id"`
-	REV    string `json:"rev"`
-	OK     bool   `json:"ok"`
-	Error  string `json:"error"`
-	Reason string `json:"reason"`
+	ID     string `json:"id,omitempty"`
+	REV    string `json:"rev,omitempty"`
+	OK     bool   `json:"ok,omitempty"`
+	Error  string `json:"error,omitempty"`
+	Reason string `json:"reason,omitempty"`
 }
 
 // Session holds the connection data for a couchcandy session.
@@ -122,28 +126,44 @@ type Session struct {
 	Password string
 }
 
+// ViewResponse represents the response sent when a view is called
+type ViewResponse struct {
+	TotalRows int       `json:"total_rows,omitempty"`
+	Offset    int       `json:"offset"`
+	Rows      []ViewRow `json:"rows"`
+}
+
+// ViewRow represents a row in the ViewResponse
+type ViewRow struct {
+	ID    string      `json:"id,omitempty"`
+	Key   string      `json:"key,omitempty"`
+	Value interface{} `json:"value,omitempty"`
+}
+
 // AllDocuments This struct contains the response to the all documents call.
 type AllDocuments struct {
-	TotalRows int   `json:"total_rows"`
-	Offset    int   `json:"offset"`
-	Rows      []Row `json:"rows"`
+	TotalRows int    `json:"total_rows,omitempty"`
+	Offset    int    `json:"offset,omitempty"`
+	Rows      []Row  `json:"rows,omitempty"`
+	Error     string `json:"error,omitempty"`
+	Reason    string `json:"reason,omitmepty"`
 }
 
 // Row This is a row in the array of rows on the AllDocuments struct.
 type Row struct {
-	ID    string      `json:"id"`
-	Key   string      `json:"key"`
-	Value Value       `json:"value"`
-	Doc   interface{} `json:"doc"`
+	ID    string      `json:"id,omitempty"`
+	Key   string      `json:"key,omitempty"`
+	Value Value       `json:"value,omitempty"`
+	Doc   interface{} `json:"doc,omitempty"`
 }
 
 // Value The value returned in rows whilst calling CouchDB's _all_docs service.
 type Value struct {
-	REV string `json:"rev"`
+	REV string `json:"rev,omitempty"`
 }
 
 // AllDocumentsKeys Is used when fetching documents by keys. This struct is passed
 // as a POST parameter.
 type AllDocumentsKeys struct {
-	keys []string `json:"keys"`
+	Keys []string `json:"keys,omitempty"`
 }

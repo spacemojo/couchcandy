@@ -98,8 +98,7 @@ func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*Operat
 // GetAllDocuments : Returns all documents in the database based on the passed parameters.
 func (c *CouchCandy) GetAllDocuments(options Options) (*AllDocuments, error) {
 
-	checkOptionsForAllDocuments(&options)
-	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", createDatabaseURL(c.LclSession), options.Descending, options.Limit, options.IncludeDocs)
+	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.LclSession), toQueryString(options))
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -112,11 +111,10 @@ func (c *CouchCandy) GetAllDocuments(options Options) (*AllDocuments, error) {
 // GetDocumentsByKeys Fetches all the documents corresponding to the passed keys array.
 func (c *CouchCandy) GetDocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
 
-	checkOptionsForAllDocuments(&options)
-	url := fmt.Sprintf("%s/_all_docs?descending=%v&limit=%v&include_docs=%v", createDatabaseURL(c.LclSession), options.Descending, options.Limit, options.IncludeDocs)
+	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.LclSession), toQueryString(options))
 
 	body, _ := json.Marshal(&AllDocumentsKeys{
-		keys: keys,
+		Keys: keys,
 	})
 
 	page, err := readFromWithBody(url, string(body), c.PostHandler)
@@ -200,17 +198,15 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 }
 
-// CallMap : Calls the passed map function with provided options
-func (c *CouchCandy) CallMap(ddoc, view string, options Options) (*AllDocuments, error) {
+// CallView : Calls the passed view with provided options
+func (c *CouchCandy) CallView(ddoc, view string, options Options) (*ViewResponse, error) {
 
-	checkOptionsForAllDocuments(&options)
-	url := fmt.Sprintf("%s/_design/%s/_view/%s?key=\"%s\"&include_docs=%v&limit=%d", createDatabaseURL(c.LclSession), ddoc, view, options.Key, options.IncludeDocs, options.Limit)
+	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.LclSession), ddoc, view, toQueryString(options))
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
 	}
-
-	return toAllDocuments(page)
+	return toViewResponse(page)
 
 }
 

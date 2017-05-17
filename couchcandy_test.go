@@ -593,7 +593,7 @@ func TestCallMapFunction(t *testing.T) {
 		return response, nil
 	}
 
-	docs, err := couchcandy.CallMap("cards", "by_suit", Options{
+	docs, err := couchcandy.CallView("cards", "by_suit", Options{
 		Limit:       3,
 		IncludeDocs: true,
 	})
@@ -616,7 +616,7 @@ func TestCallMapFunctionFailure(t *testing.T) {
 		return nil, fmt.Errorf("an error occured whilst calling the map function")
 	}
 
-	docs, err := couchcandy.CallMap("cards", "by_suit", Options{})
+	docs, err := couchcandy.CallView("cards", "by_suit", Options{})
 
 	if err == nil {
 		t.Fail()
@@ -711,23 +711,39 @@ func TestCreatePutDocumentURL(t *testing.T) {
 
 }
 
-func TestCheckOptionsForAllDocuments(t *testing.T) {
-
-	options := &Options{
-		Limit: 0,
-	}
-	checkOptionsForAllDocuments(options)
-	if options.Limit != 10 {
-		t.Fail()
-	}
-
-}
-
 func TestSafeMarshalError(t *testing.T) {
 
 	value := make(chan int)
 	_, err := safeMarshall(value)
 	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestToQueryString(t *testing.T) {
+
+	queryString := toQueryString(Options{
+		IncludeDocs: true,
+		Key:         "\"serge\"",
+	})
+
+	if queryString != "?descending=false&include_docs=true&reduce=false&key=\"serge\"" {
+		t.Fail()
+	}
+
+}
+
+func TestToParameters(t *testing.T) {
+
+	parameters := toParameters(Options{
+		IncludeDocs: true,
+		Limit:       0,
+		Key:         "serge",
+	})
+
+	fmt.Printf("Paramerers : %v\n", parameters)
+	if parameters[0] != "descending=false" || parameters[1] != "include_docs=true" || parameters[2] != "reduce=false" || parameters[3] != "key=serge" {
 		t.Fail()
 	}
 
