@@ -45,3 +45,6 @@ type DatabaseInfo struct {
 	CommittedUpdateSeq int    `json:"committed_update_seq"`
 }
 ```
+
+
+[![Join the chat at https://gitter.im/couchcandy/Lobby](https://badges.gitter.im/couchcandy/Lobby.svg)](https://gitter.im/couchcandy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
