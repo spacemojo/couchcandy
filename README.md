@@ -7,6 +7,7 @@
 [![Build Status](https://travis-ci.org/spacemojo/couchcandy.svg?branch=master)](https://travis-ci.org/spacemojo/couchcandy)
 [![codecov](https://codecov.io/gh/spacemojo/couchcandy/branch/master/graph/badge.svg)](https://codecov.io/gh/spacemojo/couchcandy)
 [![GoDoc](https://godoc.org/github.com/spacemojo/couchcandy?status.svg)](https://godoc.org/github.com/spacemojo/couchcandy)
+[![Join the chat at https://gitter.im/couchcandy/Lobby](https://badges.gitter.im/couchcandy/Lobby.svg)](https://gitter.im/couchcandy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This is my first try at a GoLang project, be gentle.
 
