@@ -93,7 +93,9 @@ func toParameters(options Options) []string {
 	parameters := make([]string, 0)
 
 	parameters = append(parameters, fmt.Sprintf("descending=%v", options.Descending))
-	parameters = append(parameters, fmt.Sprintf("include_docs=%v", options.IncludeDocs))
+	if !options.Reduce {
+		parameters = append(parameters, fmt.Sprintf("include_docs=%v", options.IncludeDocs))
+	}
 	parameters = append(parameters, fmt.Sprintf("reduce=%v", options.Reduce))
 	if options.Limit != 0 {
 		parameters = append(parameters, fmt.Sprintf("limit=%v", options.Limit))

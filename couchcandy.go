@@ -202,6 +202,7 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 func (c *CouchCandy) CallView(ddoc, view string, options Options) (*ViewResponse, error) {
 
 	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.LclSession), ddoc, view, toQueryString(options))
+	fmt.Printf("CouchCandy.CallView(%s)\n", url)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err

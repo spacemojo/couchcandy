@@ -21,11 +21,11 @@ type CandyHTTPClient interface {
 // 2 attributes and the potential of having Error, Reason and
 // _revisions.
 type CandyDocument struct {
-	ID        string   `json:"_id,omitempty"`
-	REV       string   `json:"_rev,omitempty"`
-	Error     string   `json:"error,omitempty"`
-	Reason    string   `json:"reason,omitempty"`
-	Revisions Revision `json:"_revisions,omitempty"`
+	ID     string `json:"_id,omitempty"`
+	REV    string `json:"_rev,omitempty"`
+	Error  string `json:"error,omitempty"`
+	Reason string `json:"reason,omitempty"`
+	// Revisions Revision `json:"_revisions,omitempty"`
 }
 
 // Revision The revision struct when calling the get document api with revs.
@@ -129,14 +129,16 @@ type Session struct {
 // ViewResponse represents the response sent when a view is called
 type ViewResponse struct {
 	TotalRows int       `json:"total_rows,omitempty"`
-	Offset    int       `json:"offset"`
-	Rows      []ViewRow `json:"rows"`
+	Offset    int       `json:"offset,omitempty"`
+	Error     string    `json:"error,omitempty"`
+	Reason    string    `json:"reason,omitempty"`
+	Rows      []ViewRow `json:"rows,omitempty"`
 }
 
 // ViewRow represents a row in the ViewResponse
 type ViewRow struct {
 	ID    string      `json:"id,omitempty"`
-	Key   string      `json:"key,omitempty"`
+	Key   interface{} `json:"key,omitempty"`
 	Value interface{} `json:"value,omitempty"`
 }
 
