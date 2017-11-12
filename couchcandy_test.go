@@ -21,7 +21,7 @@ type ShortProfile struct {
 	Email     string `json:"email"`
 }
 
-func TestGetDatabaseInfo(t *testing.T) {
+func TestDatabaseInfo(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
@@ -32,7 +32,7 @@ func TestGetDatabaseInfo(t *testing.T) {
 		}
 		return response, nil
 	}
-	info, err := couchcandy.GetDatabaseInfo()
+	info, err := couchcandy.DatabaseInfo()
 
 	if info.DocCount != 20682 || info.DBName != "udb" || err != nil {
 		t.Fail()
@@ -40,15 +40,15 @@ func TestGetDatabaseInfo(t *testing.T) {
 
 }
 
-func TestGetDatabaseInfoFailure(t *testing.T) {
+func TestDatabaseInfoFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "udb", Username: "test", Password: "gotest",
 	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
-		return nil, fmt.Errorf("%s", "This is a deliberate error in unit tests (TestGetDatabaseInfoFailure)")
+		return nil, fmt.Errorf("%s", "This is a deliberate error in unit tests (TestDatabaseInfoFailure)")
 	}
-	_, err := couchcandy.GetDatabaseInfo()
+	_, err := couchcandy.DatabaseInfo()
 	if err == nil {
 		t.Fail()
 	} else {

@@ -9,7 +9,7 @@ import (
 )
 
 // GetDatabaseInfo returns basic information about the database in session.
-func (c *CouchCandy) GetDatabaseInfo() (*DatabaseInfo, error) {
+func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 
 	url := createDatabaseURL(c.LclSession)
 	page, err := readFrom(url, c.GetHandler)
@@ -202,6 +202,18 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 func (c *CouchCandy) CallView(ddoc, view string, options Options) (*ViewResponse, error) {
 
 	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.LclSession), ddoc, view, toQueryString(options))
+	page, err := readFrom(url, c.GetHandler)
+	if err != nil {
+		return nil, err
+	}
+	return toViewResponse(page)
+
+}
+
+// CallViewWithList calls the passed view with list and options
+func (c *CouchCandy) CallViewWithList(ddoc, list, view string, options Options) (*ViewResponse, error) {
+
+	url := fmt.Sprintf("%s/_design/%s/_list/%s/%s/%s%s", createDatabaseURL(c.LclSession), ddoc, list, ddoc, view, toQueryString(options))
 	fmt.Printf("CouchCandy.CallView(%s)\n", url)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
