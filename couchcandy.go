@@ -23,8 +23,8 @@ func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 
 }
 
-// GetDocument Returns the specified document.
-func (c *CouchCandy) GetDocument(id string, v interface{}, options Options) error {
+// Document Returns the specified document.
+func (c *CouchCandy) Document(id string, v interface{}, options Options) error {
 
 	url := createDocumentURLWithOptions(c.LclSession, id, options)
 	page, err := readFrom(url, c.GetHandler)
@@ -37,9 +37,9 @@ func (c *CouchCandy) GetDocument(id string, v interface{}, options Options) erro
 
 }
 
-// PostDocument Adds a document in the database but the system will generate
+// Add Adds a document in the database but the system will generate
 // an id. Look at PutDocumentWithID for setting an id for the document explicitly.
-func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, error) {
+func (c *CouchCandy) Add(document interface{}) (*OperationResponse, error) {
 
 	url := createDatabaseURL(c.LclSession)
 	bodyStr, marshallError := safeMarshall(document)
@@ -56,9 +56,9 @@ func (c *CouchCandy) PostDocument(document interface{}) (*OperationResponse, err
 
 }
 
-// PutDocument Updates a document in the database. Note that _id and _rev
+// Update Updates a document in the database. Note that _id and _rev
 // fields are required in the passed document.
-func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, error) {
+func (c *CouchCandy) Update(document interface{}) (*OperationResponse, error) {
 
 	bodyStr, marshallError := safeMarshall(document)
 	if marshallError != nil {
@@ -76,8 +76,8 @@ func (c *CouchCandy) PutDocument(document interface{}) (*OperationResponse, erro
 
 }
 
-// PutDocumentWithID Inserts a document in the database with the specified id
-func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*OperationResponse, error) {
+// AddWithID Inserts a document in the database with the specified id
+func (c *CouchCandy) AddWithID(id string, document interface{}) (*OperationResponse, error) {
 
 	url := fmt.Sprintf("%s/%s", createDatabaseURL(c.LclSession), id)
 
@@ -95,8 +95,8 @@ func (c *CouchCandy) PutDocumentWithID(id string, document interface{}) (*Operat
 
 }
 
-// GetAllDocuments : Returns all documents in the database based on the passed parameters.
-func (c *CouchCandy) GetAllDocuments(options Options) (*AllDocuments, error) {
+// Documents : Returns all documents in the database based on the passed parameters.
+func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 
 	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.LclSession), toQueryString(options))
 	page, err := readFrom(url, c.GetHandler)
@@ -108,8 +108,8 @@ func (c *CouchCandy) GetAllDocuments(options Options) (*AllDocuments, error) {
 
 }
 
-// GetDocumentsByKeys Fetches all the documents corresponding to the passed keys array.
-func (c *CouchCandy) GetDocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
+// DocumentsByKeys Fetches all the documents corresponding to the passed keys array.
+func (c *CouchCandy) DocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
 
 	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.LclSession), toQueryString(options))
 
@@ -126,8 +126,8 @@ func (c *CouchCandy) GetDocumentsByKeys(keys []string, options Options) (*AllDoc
 
 }
 
-// PutDatabase : Creates a database in CouchDB
-func (c *CouchCandy) PutDatabase(name string) (*OperationResponse, error) {
+// AddDatabase : Creates a database in CouchDB
+func (c *CouchCandy) AddDatabase(name string) (*OperationResponse, error) {
 
 	c.LclSession.Database = name
 	url := createDatabaseURL(c.LclSession)
@@ -155,8 +155,8 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 
 }
 
-// DeleteDocument Deletes the passed document with revision from the database
-func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationResponse, error) {
+// Delete Deletes the passed document with revision from the database
+func (c *CouchCandy) Delete(id string, revision string) (*OperationResponse, error) {
 
 	url := fmt.Sprintf("%s?rev=%s", createDocumentURL(c.LclSession, id), revision)
 	page, err := readFrom(url, c.DeleteHandler)
@@ -168,8 +168,8 @@ func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationRespo
 
 }
 
-// GetAllDatabases : Returns all the database names in the system.
-func (c *CouchCandy) GetAllDatabases() ([]string, error) {
+// AllDatabases : Returns all the database names in the system.
+func (c *CouchCandy) AllDatabases() ([]string, error) {
 
 	url := createAllDatabasesURL(c.LclSession)
 	page, err := readFrom(url, c.GetHandler)
@@ -183,8 +183,8 @@ func (c *CouchCandy) GetAllDatabases() ([]string, error) {
 
 }
 
-// GetChangeNotifications : Return the current change notifications.
-func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
+// ChangeNotifications : Return the current change notifications.
+func (c *CouchCandy) ChangeNotifications(options Options) (*Changes, error) {
 
 	url := fmt.Sprintf("%s/_changes?style=%s", createDatabaseURL(c.LclSession), options.Style)
 	page, err := readFrom(url, c.GetHandler)
@@ -198,8 +198,8 @@ func (c *CouchCandy) GetChangeNotifications(options Options) (*Changes, error) {
 
 }
 
-// CallView : Calls the passed view with provided options
-func (c *CouchCandy) CallView(ddoc, view string, options Options) (*ViewResponse, error) {
+// View : Calls the passed view with provided options
+func (c *CouchCandy) View(ddoc, view string, options Options) (*ViewResponse, error) {
 
 	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.LclSession), ddoc, view, toQueryString(options))
 	page, err := readFrom(url, c.GetHandler)
@@ -210,8 +210,8 @@ func (c *CouchCandy) CallView(ddoc, view string, options Options) (*ViewResponse
 
 }
 
-// CallViewWithList calls the passed view with list and options
-func (c *CouchCandy) CallViewWithList(ddoc, list, view string, options Options) (*ViewResponse, error) {
+// ViewWithList calls the passed view with list and options
+func (c *CouchCandy) ViewWithList(ddoc, list, view string, options Options) (*ViewResponse, error) {
 
 	url := fmt.Sprintf("%s/_design/%s/_list/%s/%s/%s%s", createDatabaseURL(c.LclSession), ddoc, list, ddoc, view, toQueryString(options))
 	fmt.Printf("CouchCandy.CallView(%s)\n", url)

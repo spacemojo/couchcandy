@@ -57,7 +57,7 @@ func TestDatabaseInfoFailure(t *testing.T) {
 
 }
 
-func TestGetDocument(t *testing.T) {
+func TestDocument(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -71,7 +71,7 @@ func TestGetDocument(t *testing.T) {
 	}
 
 	profile := &UserProfile{}
-	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile, Options{
+	err := couchcandy.Document("053cc05f2ee97a0c91d276c9e700194b", profile, Options{
 		Revs: true,
 		Rev:  "3-b96f323b37f19c4d1affddf3db3da9c5",
 	})
@@ -81,7 +81,7 @@ func TestGetDocument(t *testing.T) {
 
 }
 
-func TestGetDocumentFailure(t *testing.T) {
+func TestDocumentFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -91,7 +91,7 @@ func TestGetDocumentFailure(t *testing.T) {
 	}
 
 	profile := &UserProfile{}
-	err := couchcandy.GetDocument("053cc05f2ee97a0c91d276c9e700194b", profile, Options{
+	err := couchcandy.Document("053cc05f2ee97a0c91d276c9e700194b", profile, Options{
 		Revs: false,
 		Rev:  "",
 	})
@@ -101,7 +101,7 @@ func TestGetDocumentFailure(t *testing.T) {
 
 }
 
-func TestDeleteDocumentSuccess(t *testing.T) {
+func TestDeleteSuccess(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -113,7 +113,7 @@ func TestDeleteDocumentSuccess(t *testing.T) {
 		return response, nil
 	}
 
-	response, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
+	response, err := couchcandy.Delete("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
 	if err != nil {
 		t.Fail()
 	}
@@ -123,7 +123,7 @@ func TestDeleteDocumentSuccess(t *testing.T) {
 
 }
 
-func TestDeleteDocumentFailure(t *testing.T) {
+func TestDeleteFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -132,14 +132,14 @@ func TestDeleteDocumentFailure(t *testing.T) {
 		return nil, fmt.Errorf("an error occured when deleting the document")
 	}
 
-	_, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
+	_, err := couchcandy.Delete("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestGetAllDatabases(t *testing.T) {
+func TestAllDatabases(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -152,7 +152,7 @@ func TestGetAllDatabases(t *testing.T) {
 		return response, nil
 	}
 
-	names, err := couchcandy.GetAllDatabases()
+	names, err := couchcandy.AllDatabases()
 	if err != nil {
 		t.Fail()
 	}
@@ -160,24 +160,24 @@ func TestGetAllDatabases(t *testing.T) {
 
 }
 
-func TestGetAllDatabasesFailure(t *testing.T) {
+func TestAllDatabasesFailure(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
-		return nil, fmt.Errorf("Deliberate error from TestGetAllDatabasesFailure()")
+		return nil, fmt.Errorf("Deliberate error from TestAllDatabasesFailure()")
 	}
 
-	_, err := couchcandy.GetAllDatabases()
+	_, err := couchcandy.AllDatabases()
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestGetChangeNotifications(t *testing.T) {
+func TestChangeNotificatios(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -198,7 +198,7 @@ func TestGetChangeNotifications(t *testing.T) {
 		return response, nil
 	}
 
-	changes, _ := couchcandy.GetChangeNotifications(Options{
+	changes, _ := couchcandy.ChangeNotifications(Options{
 		Style: MainOnly,
 	})
 	if len(changes.Results) != 8 {
@@ -207,17 +207,17 @@ func TestGetChangeNotifications(t *testing.T) {
 
 }
 
-func TestGetChangeNotificationsFailure(t *testing.T) {
+func TestChangeNotificatiosFailure(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
-		return nil, fmt.Errorf("Deliberate error in TestGetChangeNotificationsFailure")
+		return nil, fmt.Errorf("Deliberate error in TestChangeNotificatiosFailure")
 	}
 
-	_, err := couchcandy.GetChangeNotifications(Options{
+	_, err := couchcandy.ChangeNotifications(Options{
 		Style: MainOnly,
 	})
 	if err == nil {
@@ -226,7 +226,7 @@ func TestGetChangeNotificationsFailure(t *testing.T) {
 
 }
 
-func TestPutDocumentWithID(t *testing.T) {
+func TestAddWithID(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -240,14 +240,14 @@ func TestPutDocumentWithID(t *testing.T) {
 		return response, nil
 	}
 
-	response, _ := couchcandy.PutDocumentWithID("1029384756", &ShortProfile{})
+	response, _ := couchcandy.AddWithID("1029384756", &ShortProfile{})
 	if !response.OK {
 		t.Fail()
 	}
 
 }
 
-func TestPutDocumentWithIDFailure(t *testing.T) {
+func TestAddWithIDFailure(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -255,30 +255,30 @@ func TestPutDocumentWithIDFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(session)
 	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
-		return nil, fmt.Errorf("Deliberate error thrown in TestPutDocumentWithIDFailure")
+		return nil, fmt.Errorf("Deliberate error thrown in TestAddWithIDFailure")
 	}
 
-	_, err := couchcandy.PutDocumentWithID("1029384756", &ShortProfile{})
+	_, err := couchcandy.AddWithID("1029384756", &ShortProfile{})
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestPutDocumentWithIDMarshalError(t *testing.T) {
+func TestAddWithIDMarshalError(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	value := make(chan int)
-	_, err := couchcandy.PutDocumentWithID("102938", value)
+	_, err := couchcandy.AddWithID("102938", value)
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestPutDocument(t *testing.T) {
+func TestUpdate(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -292,43 +292,43 @@ func TestPutDocument(t *testing.T) {
 		return response, nil
 	}
 
-	response, _ := couchcandy.PutDocument(&ShortProfile{})
+	response, _ := couchcandy.Update(&ShortProfile{})
 	if !response.OK {
 		t.Fail()
 	}
 
 }
 
-func TestPutDocumentFailure(t *testing.T) {
+func TestUpdateFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
-		return nil, fmt.Errorf("Deliberate error from TestPutDocumentFailure test")
+		return nil, fmt.Errorf("Deliberate error from TestUpdateFailure test")
 	}
 
-	_, err := couchcandy.PutDocument(&ShortProfile{})
+	_, err := couchcandy.Update(&ShortProfile{})
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestPutDocumentMarshalError(t *testing.T) {
+func TestUpdateMarshalError(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	value := make(chan int)
-	_, err := couchcandy.PutDocument(value)
+	_, err := couchcandy.Update(value)
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestPostDocument(t *testing.T) {
+func TestAdd(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -340,43 +340,43 @@ func TestPostDocument(t *testing.T) {
 		return response, nil
 	}
 
-	response, _ := couchcandy.PostDocument(&ShortProfile{})
+	response, _ := couchcandy.Add(&ShortProfile{})
 	if !response.OK {
 		t.Fail()
 	}
 
 }
 
-func TestPostDocumentFailure(t *testing.T) {
+func TestAddFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
-		return nil, fmt.Errorf("Deliberate error in TestPostDocumentFailure")
+		return nil, fmt.Errorf("Deliberate error in TestAddFailure")
 	}
 
-	_, err := couchcandy.PostDocument(&ShortProfile{})
+	_, err := couchcandy.Add(&ShortProfile{})
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestPostDocumentMarshalError(t *testing.T) {
+func TestAddMarshalError(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	value := make(chan int)
-	_, err := couchcandy.PostDocument(value)
+	_, err := couchcandy.Add(value)
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestPutDatabase(t *testing.T) {
+func TestAddDatabase(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -389,24 +389,24 @@ func TestPutDatabase(t *testing.T) {
 		return response, nil
 	}
 
-	res, err := couchcandy.PutDatabase("unittestdb")
+	res, err := couchcandy.AddDatabase("unittestdb")
 	if err != nil || !res.OK {
 		t.Fail()
 	}
 
 }
 
-func TestPutDatabaseFailure(t *testing.T) {
+func TestAddDatabaseFailure(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
 	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
-		return nil, fmt.Errorf("Deliberate error from TestPutDatabaseFailure()")
+		return nil, fmt.Errorf("Deliberate error from TestAddDatabaseFailure()")
 	}
 
-	_, err := couchcandy.PutDatabase("unittestdb")
+	_, err := couchcandy.AddDatabase("unittestdb")
 	if err == nil {
 		t.Fail()
 	}
@@ -450,7 +450,7 @@ func TestDeleteDatabaseFailure(t *testing.T) {
 
 }
 
-func TestGetDocumentsByKeys(t *testing.T) {
+func TestDocumentsByKeys(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
@@ -497,7 +497,7 @@ func TestGetDocumentsByKeys(t *testing.T) {
 		return response, nil
 	}
 
-	allDocuments, err := couchcandy.GetDocumentsByKeys([]string{"Penn", "Teller"}, Options{IncludeDocs: true, Limit: 10})
+	allDocuments, err := couchcandy.DocumentsByKeys([]string{"Penn", "Teller"}, Options{IncludeDocs: true, Limit: 10})
 	if err != nil {
 		t.Fail()
 	}
@@ -507,7 +507,7 @@ func TestGetDocumentsByKeys(t *testing.T) {
 
 }
 
-func TestGetDocumentsByKeysFailure(t *testing.T) {
+func TestDocumentsByKeysFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
@@ -516,14 +516,14 @@ func TestGetDocumentsByKeysFailure(t *testing.T) {
 		return nil, fmt.Errorf("An error occured when fetching documents by keys")
 	}
 
-	_, err := couchcandy.GetDocumentsByKeys([]string{""}, Options{IncludeDocs: true, Limit: 10})
+	_, err := couchcandy.DocumentsByKeys([]string{""}, Options{IncludeDocs: true, Limit: 10})
 	if err == nil {
 		t.Fail()
 	}
 
 }
 
-func TestGetAllDocuments(t *testing.T) {
+func TestAllDocuments(t *testing.T) {
 
 	session := Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
@@ -542,7 +542,7 @@ func TestGetAllDocuments(t *testing.T) {
 		return response, nil
 	}
 
-	allDocuments, err := couchcandy.GetAllDocuments(Options{
+	allDocuments, err := couchcandy.Documents(Options{
 		Limit:       5,
 		IncludeDocs: false,
 		Descending:  false,
@@ -557,16 +557,16 @@ func TestGetAllDocuments(t *testing.T) {
 
 }
 
-func TestGetAllDocumentsFailure(t *testing.T) {
+func TestAllDocumentsFailure(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
-		return nil, fmt.Errorf("Deliberate error from the TestGetAllDocumentsFailure test")
+		return nil, fmt.Errorf("Deliberate error from the TestAllDocumentsFailure test")
 	}
 
-	_, err := couchcandy.GetAllDocuments(Options{
+	_, err := couchcandy.Documents(Options{
 		Descending:  false,
 		Limit:       5,
 		IncludeDocs: false,
@@ -593,7 +593,7 @@ func TestCallMapFunction(t *testing.T) {
 		return response, nil
 	}
 
-	docs, err := couchcandy.CallView("cards", "by_suit", Options{
+	docs, err := couchcandy.View("cards", "by_suit", Options{
 		Limit:       3,
 		IncludeDocs: true,
 	})
@@ -616,7 +616,7 @@ func TestCallMapFunctionFailure(t *testing.T) {
 		return nil, fmt.Errorf("an error occured whilst calling the map function")
 	}
 
-	docs, err := couchcandy.CallView("cards", "by_suit", Options{})
+	docs, err := couchcandy.View("cards", "by_suit", Options{})
 
 	if err == nil {
 		t.Fail()
@@ -702,7 +702,7 @@ func TestDefaultHandlerWithBodyDoRequestFail(t *testing.T) {
 
 }
 
-func TestCreatePutDocumentURL(t *testing.T) {
+func TestCreateUpdateURL(t *testing.T) {
 
 	url := createPutDocumentURL(Session{}, "{badBodyFormat}")
 	if url != "" {
