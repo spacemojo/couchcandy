@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -101,13 +102,13 @@ func toParameters(options Options) []string {
 		parameters = append(parameters, fmt.Sprintf("limit=%v", options.Limit))
 	}
 	if options.Key != "" {
-		parameters = append(parameters, fmt.Sprintf("key=%s", options.Key))
+		parameters = append(parameters, fmt.Sprintf("key=%s", url.QueryEscape(options.Key)))
 	}
 	if options.StartKey != "" {
-		parameters = append(parameters, fmt.Sprintf("start_key=%s", options.StartKey))
+		parameters = append(parameters, fmt.Sprintf("start_key=%s", url.QueryEscape(options.StartKey)))
 	}
 	if options.EndKey != "" {
-		parameters = append(parameters, fmt.Sprintf("end_key=%s", options.EndKey))
+		parameters = append(parameters, fmt.Sprintf("end_key=%s", url.QueryEscape(options.EndKey)))
 	}
 	if options.GroupLevel != 0 {
 		parameters = append(parameters, fmt.Sprintf("group_level=%v", options.GroupLevel))

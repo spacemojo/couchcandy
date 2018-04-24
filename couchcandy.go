@@ -11,7 +11,7 @@ import (
 // GetDatabaseInfo returns basic information about the database in session.
 func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 
-	url := createDatabaseURL(c.LclSession)
+	url := createDatabaseURL(c.Session)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 // Document Returns the specified document.
 func (c *CouchCandy) Document(id string, v interface{}, options Options) error {
 
-	url := createDocumentURLWithOptions(c.LclSession, id, options)
+	url := createDocumentURLWithOptions(c.Session, id, options)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (c *CouchCandy) Document(id string, v interface{}, options Options) error {
 // an id. Look at PutDocumentWithID for setting an id for the document explicitly.
 func (c *CouchCandy) Add(document interface{}) (*OperationResponse, error) {
 
-	url := createDatabaseURL(c.LclSession)
+	url := createDatabaseURL(c.Session)
 	bodyStr, marshallError := safeMarshall(document)
 	if marshallError != nil {
 		return nil, marshallError
@@ -65,7 +65,7 @@ func (c *CouchCandy) Update(document interface{}) (*OperationResponse, error) {
 		return nil, marshallError
 	}
 
-	url := createPutDocumentURL(c.LclSession, bodyStr)
+	url := createPutDocumentURL(c.Session, bodyStr)
 
 	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *CouchCandy) Update(document interface{}) (*OperationResponse, error) {
 // AddWithID Inserts a document in the database with the specified id
 func (c *CouchCandy) AddWithID(id string, document interface{}) (*OperationResponse, error) {
 
-	url := fmt.Sprintf("%s/%s", createDatabaseURL(c.LclSession), id)
+	url := fmt.Sprintf("%s/%s", createDatabaseURL(c.Session), id)
 
 	bodyStr, marshallError := safeMarshall(document)
 	if marshallError != nil {
@@ -98,7 +98,7 @@ func (c *CouchCandy) AddWithID(id string, document interface{}) (*OperationRespo
 // Documents : Returns all documents in the database based on the passed parameters.
 func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 
-	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.LclSession), toQueryString(options))
+	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.Session), toQueryString(options))
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 // DocumentsByKeys Fetches all the documents corresponding to the passed keys array.
 func (c *CouchCandy) DocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
 
-	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.LclSession), toQueryString(options))
+	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.Session), toQueryString(options))
 
 	body, _ := json.Marshal(&AllDocumentsKeys{
 		Keys: keys,
@@ -129,8 +129,8 @@ func (c *CouchCandy) DocumentsByKeys(keys []string, options Options) (*AllDocume
 // AddDatabase : Creates a database in CouchDB
 func (c *CouchCandy) AddDatabase(name string) (*OperationResponse, error) {
 
-	c.LclSession.Database = name
-	url := createDatabaseURL(c.LclSession)
+	c.Session.Database = name
+	url := createDatabaseURL(c.Session)
 
 	page, err := readFromWithBody(url, "", c.PutHandler)
 	if err != nil {
@@ -144,8 +144,8 @@ func (c *CouchCandy) AddDatabase(name string) (*OperationResponse, error) {
 // DeleteDatabase : Deletes the passed database from the system.
 func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 
-	c.LclSession.Database = name
-	url := createDatabaseURL(c.LclSession)
+	c.Session.Database = name
+	url := createDatabaseURL(c.Session)
 	page, err := readFrom(url, c.DeleteHandler)
 	if err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 // Delete Deletes the passed document with revision from the database
 func (c *CouchCandy) Delete(id string, revision string) (*OperationResponse, error) {
 
-	url := fmt.Sprintf("%s?rev=%s", createDocumentURL(c.LclSession, id), revision)
+	url := fmt.Sprintf("%s?rev=%s", createDocumentURL(c.Session, id), revision)
 	page, err := readFrom(url, c.DeleteHandler)
 	if err != nil {
 		return nil, err
@@ -171,7 +171,7 @@ func (c *CouchCandy) Delete(id string, revision string) (*OperationResponse, err
 // AllDatabases : Returns all the database names in the system.
 func (c *CouchCandy) AllDatabases() ([]string, error) {
 
-	url := createAllDatabasesURL(c.LclSession)
+	url := createAllDatabasesURL(c.Session)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -186,7 +186,7 @@ func (c *CouchCandy) AllDatabases() ([]string, error) {
 // ChangeNotifications : Return the current change notifications.
 func (c *CouchCandy) ChangeNotifications(options Options) (*Changes, error) {
 
-	url := fmt.Sprintf("%s/_changes?style=%s", createDatabaseURL(c.LclSession), options.Style)
+	url := fmt.Sprintf("%s/_changes?style=%s", createDatabaseURL(c.Session), options.Style)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -201,7 +201,8 @@ func (c *CouchCandy) ChangeNotifications(options Options) (*Changes, error) {
 // View : Calls the passed view with provided options
 func (c *CouchCandy) View(ddoc, view string, options Options) (*ViewResponse, error) {
 
-	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.LclSession), ddoc, view, toQueryString(options))
+	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.Session), ddoc, view, toQueryString(options))
+	fmt.Printf("View url : %s\n", url)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -213,7 +214,7 @@ func (c *CouchCandy) View(ddoc, view string, options Options) (*ViewResponse, er
 // ViewWithList calls the passed view with list and options
 func (c *CouchCandy) ViewWithList(ddoc, list, view string, options Options) (*ViewResponse, error) {
 
-	url := fmt.Sprintf("%s/_design/%s/_list/%s/%s/%s%s", createDatabaseURL(c.LclSession), ddoc, list, ddoc, view, toQueryString(options))
+	url := fmt.Sprintf("%s/_design/%s/_list/%s/%s/%s%s", createDatabaseURL(c.Session), ddoc, list, ddoc, view, toQueryString(options))
 	fmt.Printf("CouchCandy.CallView(%s)\n", url)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
@@ -291,6 +292,7 @@ func defaultDeleteHandler(url string) (*http.Response, error) {
 
 func defaultHandler(method, url string, client CandyHTTPClient) (*http.Response, error) {
 
+	fmt.Printf("%s %s\n", method, url)
 	request, requestError := http.NewRequest(method, url, nil)
 	if requestError != nil {
 		return nil, requestError

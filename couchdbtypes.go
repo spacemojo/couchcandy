@@ -7,6 +7,10 @@ const (
 	MainOnly string = "main_only"
 	// AllDocs Used when getting notifications
 	AllDocs string = "all_docs"
+	// Various versions of CouchDB that were tested and usable with Couchcandy
+	CDB_1_6_1 string = "1.6.1"
+	CBD_1_7_1 string = "1.7.1"
+	CDB_2_1_1 string = "2.1.1"
 )
 
 // CandyHTTPClient Interface that describes a client that executes an
@@ -36,7 +40,7 @@ type Revision struct {
 
 // CouchCandy Struct that provides all CouchDB's API has to offer.
 type CouchCandy struct {
-	LclSession    Session
+	Session       Session
 	GetHandler    func(string) (*http.Response, error)
 	PostHandler   func(string, string) (*http.Response, error)
 	PutHandler    func(string, string) (*http.Response, error)
@@ -85,7 +89,7 @@ type Options struct {
 // NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.
 func NewCouchCandy(session Session) *CouchCandy {
 	return &CouchCandy{
-		LclSession:    session,
+		Session:       session,
 		GetHandler:    defaultGetHandler,
 		PostHandler:   defaultPostHandler,
 		PutHandler:    defaultPutHandler,
@@ -119,6 +123,7 @@ type OperationResponse struct {
 
 // Session holds the connection data for a couchcandy session.
 type Session struct {
+	Version  string
 	Host     string
 	Port     int
 	Database string
