@@ -25,11 +25,21 @@ type CandyHTTPClient interface {
 // 2 attributes and the potential of having Error, Reason and
 // _revisions.
 type CandyDocument struct {
-	ID     string `json:"_id,omitempty"`
-	REV    string `json:"_rev,omitempty"`
-	Error  string `json:"error,omitempty"`
-	Reason string `json:"reason,omitempty"`
+	ID          string                `json:"_id,omitempty"`
+	REV         string                `json:"_rev,omitempty"`
+	Error       string                `json:"error,omitempty"`
+	Reason      string                `json:"reason,omitempty"`
+	Attachments map[string]Attachment `json:"_attachments"`
 	// Revisions Revision `json:"_revisions,omitempty"`
+}
+
+// Attachment is an attachment to a document
+type Attachment struct {
+	ContentType string `json:"content_type"`
+	Revpos      int    `json:"revpos"`
+	Digest      string `json:"digest"`
+	Length      int    `json:"length"`
+	Stub        bool   `json:"stub"`
 }
 
 // Revision The revision struct when calling the get document api with revs.

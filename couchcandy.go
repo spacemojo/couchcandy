@@ -1,6 +1,7 @@
 package couchcandy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,7 +9,7 @@ import (
 	"strings"
 )
 
-// GetDatabaseInfo returns basic information about the database in session.
+// DatabaseInfo returns basic information about the database in session.
 func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 
 	url := createDatabaseURL(c.Session)
@@ -87,6 +88,34 @@ func (c *CouchCandy) AddWithID(id string, document interface{}) (*OperationRespo
 	}
 
 	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	return toOperationResponse(page)
+
+}
+
+// AddAttachment adds the provided attachment to the specified
+// document and revision.
+func (c *CouchCandy) AddAttachment(id, rev, name, contentType string, file []byte) (*OperationResponse, error) {
+
+	url := fmt.Sprintf("%s/%s/%s?rev=%s", createDatabaseURL(c.Session), id, name, rev)
+	fmt.Printf("Attachment url : %s\n", url)
+
+	request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(file))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("Content-Type", contentType)
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	page, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +231,6 @@ func (c *CouchCandy) ChangeNotifications(options Options) (*Changes, error) {
 func (c *CouchCandy) View(ddoc, view string, options Options) (*ViewResponse, error) {
 
 	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.Session), ddoc, view, toQueryString(options))
-	fmt.Printf("View url : %s\n", url)
 	page, err := readFrom(url, c.GetHandler)
 	if err != nil {
 		return nil, err
@@ -292,7 +320,6 @@ func defaultDeleteHandler(url string) (*http.Response, error) {
 
 func defaultHandler(method, url string, client CandyHTTPClient) (*http.Response, error) {
 
-	fmt.Printf("%s %s\n", method, url)
 	request, requestError := http.NewRequest(method, url, nil)
 	if requestError != nil {
 		return nil, requestError
