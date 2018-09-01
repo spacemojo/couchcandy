@@ -7,10 +7,6 @@ const (
 	MainOnly string = "main_only"
 	// AllDocs Used when getting notifications
 	AllDocs string = "all_docs"
-	// Various versions of CouchDB that were tested and usable with Couchcandy
-	CDB_1_6_1 string = "1.6.1"
-	CBD_1_7_1 string = "1.7.1"
-	CDB_2_1_1 string = "2.1.1"
 )
 
 // CandyHTTPClient Interface that describes a client that executes an
@@ -133,7 +129,6 @@ type OperationResponse struct {
 
 // Session holds the connection data for a couchcandy session.
 type Session struct {
-	Version  string
 	Host     string
 	Port     int
 	Database string
