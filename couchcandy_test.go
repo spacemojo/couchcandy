@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -22,6 +23,24 @@ type ShortProfile struct {
 }
 
 func TestDatabaseInfo(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(strings.NewReader(`{"db_name":"lendr","doc_count":102,"doc_del_count":0,"update_seq":103,"purge_seq":0,"compact_running":false,"disk_size":106600,"data_size":32561,"instance_start_time":"1535733632163685","disk_format_version":6,"committed_update_seq":103}`)),
+		}
+		return response, nil
+	}
+
+	dbInfo, err := couchcandy.DatabaseInfo()
+	if err != nil {
+		t.Errorf("An error occured whilst fetching DatabaseInfo : %v", err)
+	}
+	if dbInfo.DBName != "lendr" {
+		t.Fail()
+	}
 
 }
 
