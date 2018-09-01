@@ -107,7 +107,7 @@ func (c *CouchCandy) AddAttachment(id, rev, name, contentType string, file []byt
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Content-Type", contentType)
+	request.Header.Add(HeaderContentType, contentType)
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
@@ -302,7 +302,7 @@ func defaultHandlerWithBody(method, url, body string, client CandyHTTPClient) (*
 		return nil, requestError
 	}
 
-	request.Header.Add("Content-Type", "application/json")
+	request.Header.Add(HeaderContentType, JSONContentType)
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err

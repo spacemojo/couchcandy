@@ -7,6 +7,10 @@ const (
 	MainOnly string = "main_only"
 	// AllDocs Used when getting notifications
 	AllDocs string = "all_docs"
+	// HeaderContentType is the Content-Type header
+	HeaderContentType string = "Content-Type"
+	// JSONContentType is the "application/json" content type
+	JSONContentType string = "application/json"
 )
 
 // CandyHTTPClient Interface that describes a client that executes an
