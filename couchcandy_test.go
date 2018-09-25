@@ -791,10 +791,18 @@ func TestToParameters(t *testing.T) {
 		IncludeDocs: true,
 		Limit:       0,
 		Key:         "serge",
+		StartKey:    "2018",
+		EndKey:      "2020",
+		GroupLevel:  3,
 	})
 
-	fmt.Printf("Paramerers : %v\n", parameters)
-	if parameters[0] != "descending=false" || parameters[1] != "include_docs=true" || parameters[2] != "reduce=false" || parameters[3] != "key=serge" {
+	if parameters[0] != "descending=false" ||
+		parameters[1] != "include_docs=true" ||
+		parameters[2] != "reduce=false" ||
+		parameters[3] != "key=serge" ||
+		parameters[4] != "start_key=2018" ||
+		parameters[5] != "end_key=2020" ||
+		parameters[6] != "3" {
 		t.Fail()
 	}
 
