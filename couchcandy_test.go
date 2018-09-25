@@ -27,7 +27,7 @@ func TestDatabaseInfo(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(strings.NewReader(`{"db_name":"lendr","doc_count":102,"doc_del_count":0,"update_seq":103,"purge_seq":0,"compact_running":false,"disk_size":106600,"data_size":32561,"instance_start_time":"1535733632163685","disk_format_version":6,"committed_update_seq":103}`)),
 		}
@@ -49,7 +49,7 @@ func TestDatabaseInfoFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Expected failure")
 	}
 
@@ -65,7 +65,7 @@ func TestDocument(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"_id":"053cc05f2ee97a0c91d276c9e700194b","_rev":"3-b96f323b37f19c4d1affddf3db3da9c5","type":"com.lendrapp.beans.UserProfile","shortProfile":{"id":null,"firstname":"Patrick","lastname":"Fitzgerald","email":"brun@email.com","organizationId":"053cc05f2ee97a0c91d276c9e700268f","password":"ee0c9435d5e2a07ceaa8abc829990dd3bdd15b7d6d3b0eaac100984da0841530"},"accountType":"PERSONAL","contacts":[],
 				"_revisions":{"start":3,"ids":["b96f323b37f19c4d1affddf3db3da9c5","bdeff0741cc1425e5f5b3829a7a9af2f","c76ae1eb708d6eb68974600995b98b70"]}}`)),
@@ -89,7 +89,7 @@ func TestDocumentFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "cards", Username: "admin", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestGetDocumentFailure()")
 	}
 
@@ -109,14 +109,14 @@ func TestDeleteSuccess(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Delete = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"_id":"053cc05f2ee97a0c91d276c9e700194b","_rev":"3-b96f323b37f19c4d1affddf3db3da9c5","ok":true}`)),
 		}
 		return response, nil
 	}
 
-	response, err := couchcandy.Delete("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
+	response, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
 	if err != nil {
 		t.Fail()
 	}
@@ -131,11 +131,11 @@ func TestDeleteFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Delete = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("an error occured when deleting the document")
 	}
 
-	_, err := couchcandy.Delete("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
+	_, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
 	if err == nil {
 		t.Fail()
 	}
@@ -148,7 +148,7 @@ func TestAllDatabases(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`["_replicator","_users","baseball","baseball20170228","elements","lendr","social"]`)),
 		}
@@ -169,7 +169,7 @@ func TestAllDatabasesFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestAllDatabasesFailure()")
 	}
 
@@ -186,7 +186,7 @@ func TestChangeNotificatios(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"results":[
 				{"seq":19215,"id":"actama99","changes":[{"rev":"1-e860e99218e7c618f3510c48987d6ff0"}]},
@@ -216,7 +216,7 @@ func TestChangeNotificatiosFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error in TestChangeNotificatiosFailure")
 	}
 
@@ -236,7 +236,7 @@ func TestAddWithID(t *testing.T) {
 	}
 
 	couchcandy := NewCouchCandy(session)
-	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PutJSON = func(string, string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"id":"1029384756", "rev":"1-b2b5fcc9f6ca0efcd401b9bc40f539cc", "ok": true}`)),
 		}
@@ -257,7 +257,7 @@ func TestAddWithIDFailure(t *testing.T) {
 	}
 
 	couchcandy := NewCouchCandy(session)
-	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PutJSON = func(string, string) (*http.Response, error) {
 		return nil, fmt.Errorf("Deliberate error thrown in TestAddWithIDFailure")
 	}
 
@@ -288,7 +288,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	couchcandy := NewCouchCandy(session)
-	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PutJSON = func(string, string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"id":"1029384756", "rev":"1-b2b5fcc9f6ca0efcd401b9bc40f539cc", "ok": true}`)),
 		}
@@ -307,7 +307,7 @@ func TestUpdateFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.PutHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PutJSON = func(string, string) (*http.Response, error) {
 		return nil, fmt.Errorf("Deliberate error from TestUpdateFailure test")
 	}
 
@@ -336,7 +336,7 @@ func TestAdd(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PostJSON = func(string, string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"id":"1029384756", "rev":"1-b2b5fcc9f6ca0efcd401b9bc40f539cc", "ok": true}`)),
 		}
@@ -355,7 +355,7 @@ func TestAddFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PostJSON = func(string, string) (*http.Response, error) {
 		return nil, fmt.Errorf("Deliberate error in TestAddFailure")
 	}
 
@@ -385,7 +385,7 @@ func TestAddDatabase(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
+	couchcandy.PutJSON = func(string, string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok": true}`)),
 		}
@@ -405,7 +405,7 @@ func TestAddDatabaseFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.PutHandler = func(string, string) (resp *http.Response, e error) {
+	couchcandy.PutJSON = func(string, string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestAddDatabaseFailure()")
 	}
 
@@ -422,7 +422,7 @@ func TestDeleteDatabase(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Delete = func(string) (resp *http.Response, e error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok": true}`)),
 		}
@@ -442,7 +442,7 @@ func TestDeleteDatabaseFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.DeleteHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Delete = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from TestDeleteDatabaseFailure()")
 	}
 
@@ -458,7 +458,7 @@ func TestDocumentsByKeys(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
 	})
-	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PostJSON = func(string, string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{
 			"total_rows": 5,
@@ -515,7 +515,7 @@ func TestDocumentsByKeysFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
 	})
-	couchcandy.PostHandler = func(string, string) (*http.Response, error) {
+	couchcandy.PostJSON = func(string, string) (*http.Response, error) {
 		return nil, fmt.Errorf("An error occured when fetching documents by keys")
 	}
 
@@ -532,7 +532,7 @@ func TestAllDocuments(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	}
 	couchcandy := NewCouchCandy(session)
-	couchcandy.GetHandler = func(string) (*http.Response, error) {
+	couchcandy.Get = func(string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"total_rows":20682,"offset":0,"rows":[
 			{"id":"ALB01","key":"ALB01","value":{"rev":"1-66a2e993bd32c834f4c2bb655b520c42"}},
@@ -565,7 +565,7 @@ func TestAllDocumentsFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (resp *http.Response, e error) {
+	couchcandy.Get = func(string) (resp *http.Response, e error) {
 		return nil, fmt.Errorf("Deliberate error from the TestAllDocumentsFailure test")
 	}
 
@@ -580,12 +580,59 @@ func TestAllDocumentsFailure(t *testing.T) {
 
 }
 
+func TestAddAttachmentToDocument(t *testing.T) {
+
+	// These bytes represent the file that will be added as an attachment
+	file := []byte{84, 104, 105, 115, 32, 105, 115, 32, 116, 104, 101, 32, 102, 105, 108, 101, 32, 99, 111, 110, 116, 101, 110, 116, 46, 10}
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+
+	couchcandy.PutBytes = func(string, string, []byte) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{
+				"ok":true,
+				"id":"1493f92a9873640a7c0378ee47000936",
+				"rev":"3-194b95b5f30b11f1de6ccd7b45072cea"
+ 			}`)),
+		}
+		return response, nil
+	}
+
+	opResp, err := couchcandy.AddAttachment("id", "rev", "filename.txt", "text/plain", file)
+	if err != nil || !opResp.OK || opResp.ID != "1493f92a9873640a7c0378ee47000936" {
+		t.Fail()
+	}
+
+}
+
+func TestDeleteAttachmentFromDocument(t *testing.T) {
+
+	couchcandy := NewCouchCandy(Session{
+		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
+	})
+
+	couchcandy.Delete = func(string) (*http.Response, error) {
+		response := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"ok":true,"id":"6c53db4ead49660dad9e43b0a9002108","rev":"3-e9f18d929badf964695f48add785f046"}`)),
+		}
+		return response, nil
+	}
+
+	opResp, err := couchcandy.DeleteAttachment("6c53db4ead49660dad9e43b0a9002108", "3-e9f18d929badf964695f48add785f046", "filename.txt")
+	if err != nil || !opResp.OK || opResp.ID != "6c53db4ead49660dad9e43b0a9002108" {
+		t.Fail()
+	}
+
+}
+
 func TestCallMapFunction(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (*http.Response, error) {
+	couchcandy.Get = func(string) (*http.Response, error) {
 		response := &http.Response{
 			Body: ioutil.NopCloser(bytes.NewBufferString(`{"total_rows":52,"offset":39,"rows":[
 			{"id":"899b677618b95aad18fae36b6c000310","key":"spades","value":{"_id":"899b677618b95aad18fae36b6c000310","_rev":"1-628016c8a8a997b20359cd5eec8cfd1b","id":"1-spades","suit":"spades","numericValue":1,"name":"Ace","color":"black"}},
@@ -615,7 +662,7 @@ func TestCallMapFunctionFailure(t *testing.T) {
 	couchcandy := NewCouchCandy(Session{
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
-	couchcandy.GetHandler = func(string) (*http.Response, error) {
+	couchcandy.Get = func(string) (*http.Response, error) {
 		return nil, fmt.Errorf("an error occured whilst calling the map function")
 	}
 
@@ -653,7 +700,7 @@ func (m *MockRunningHTTPClient) Do(request *http.Request) (*http.Response, error
 
 func TestDefaultHandlerSuccess(t *testing.T) {
 
-	response, _ := defaultHandler(http.MethodGet, "http://127.0.0.1:5984/dbase", &MockRunningHTTPClient{})
+	response, _ := defaultMethod(http.MethodGet, "http://127.0.0.1:5984/dbase", &MockRunningHTTPClient{})
 	if response == nil {
 		t.Fail()
 	}
@@ -662,7 +709,7 @@ func TestDefaultHandlerSuccess(t *testing.T) {
 
 func TestDefaultHandlerWithBodySuccess(t *testing.T) {
 
-	response, _ := defaultHandlerWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "This is the body for the post.", &MockRunningHTTPClient{})
+	response, _ := defaultJSONWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "This is the body for the post.", &MockRunningHTTPClient{})
 	if response == nil {
 		t.Fail()
 	}
@@ -671,7 +718,7 @@ func TestDefaultHandlerWithBodySuccess(t *testing.T) {
 
 func TestDefaultHandlerDoFail(t *testing.T) {
 
-	_, err := defaultHandler(http.MethodGet, "http://127.0.0.1:5984/dbase", &MockFailingHTTPClient{})
+	_, err := defaultMethod(http.MethodGet, "http://127.0.0.1:5984/dbase", &MockFailingHTTPClient{})
 	if err == nil {
 		t.Fail()
 	}
@@ -680,7 +727,7 @@ func TestDefaultHandlerDoFail(t *testing.T) {
 
 func TestDefaultHandlerDoRequestFail(t *testing.T) {
 
-	_, err := defaultHandler("\n", "http://127.0.0.1:5984/dbase", &MockFailingHTTPClient{})
+	_, err := defaultMethod("\n", "http://127.0.0.1:5984/dbase", &MockFailingHTTPClient{})
 	if err == nil {
 		t.Fail()
 	}
@@ -689,7 +736,7 @@ func TestDefaultHandlerDoRequestFail(t *testing.T) {
 
 func TestDefaultHandlerWithBodyDoFail(t *testing.T) {
 
-	_, err := defaultHandlerWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
+	_, err := defaultJSONWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
 	if err == nil {
 		t.Fail()
 	}
@@ -698,7 +745,7 @@ func TestDefaultHandlerWithBodyDoFail(t *testing.T) {
 
 func TestDefaultHandlerWithBodyDoRequestFail(t *testing.T) {
 
-	_, err := defaultHandlerWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
+	_, err := defaultJSONWithBody(http.MethodPost, "http://127.0.0.1:5984/dbase", "Body", &MockFailingHTTPClient{})
 	if err == nil {
 		t.Fail()
 	}

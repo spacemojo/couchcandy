@@ -29,7 +29,7 @@ type CandyDocument struct {
 	REV         string                `json:"_rev,omitempty"`
 	Error       string                `json:"error,omitempty"`
 	Reason      string                `json:"reason,omitempty"`
-	Attachments map[string]Attachment `json:"_attachments"`
+	Attachments map[string]Attachment `json:"_attachments,omitempty"`
 	// Revisions Revision `json:"_revisions,omitempty"`
 }
 
@@ -50,11 +50,12 @@ type Revision struct {
 
 // CouchCandy Struct that provides all CouchDB's API has to offer.
 type CouchCandy struct {
-	Session       Session
-	GetHandler    func(string) (*http.Response, error)
-	PostHandler   func(string, string) (*http.Response, error)
-	PutHandler    func(string, string) (*http.Response, error)
-	DeleteHandler func(string) (*http.Response, error)
+	Session  Session
+	Get      func(string) (*http.Response, error)
+	PostJSON func(string, string) (*http.Response, error)
+	PutJSON  func(string, string) (*http.Response, error)
+	PutBytes func(string, string, []byte) (*http.Response, error)
+	Delete   func(string) (*http.Response, error)
 }
 
 // Changes The struct returned by the call to get change notifications.
@@ -99,11 +100,12 @@ type Options struct {
 // NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.
 func NewCouchCandy(session Session) *CouchCandy {
 	return &CouchCandy{
-		Session:       session,
-		GetHandler:    defaultGetHandler,
-		PostHandler:   defaultPostHandler,
-		PutHandler:    defaultPutHandler,
-		DeleteHandler: defaultDeleteHandler,
+		Session:  session,
+		Get:      defaultGet,
+		PostJSON: defaultPostJSON,
+		PutJSON:  defaultPutJSON,
+		PutBytes: defaultPutBytes,
+		Delete:   defaultDelete,
 	}
 }
 

@@ -1,19 +1,15 @@
 package couchcandy
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 // DatabaseInfo returns basic information about the database in session.
 func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 
 	url := createDatabaseURL(c.Session)
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +24,7 @@ func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
 func (c *CouchCandy) Document(id string, v interface{}, options Options) error {
 
 	url := createDocumentURLWithOptions(c.Session, id, options)
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return err
 	}
@@ -48,7 +44,7 @@ func (c *CouchCandy) Add(document interface{}) (*OperationResponse, error) {
 		return nil, marshallError
 	}
 
-	page, err := readFromWithBody(url, bodyStr, c.PostHandler)
+	page, err := readJSONWithBody(url, bodyStr, c.PostJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +64,7 @@ func (c *CouchCandy) Update(document interface{}) (*OperationResponse, error) {
 
 	url := createPutDocumentURL(c.Session, bodyStr)
 
-	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
+	page, err := readJSONWithBody(url, bodyStr, c.PutJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +83,7 @@ func (c *CouchCandy) AddWithID(id string, document interface{}) (*OperationRespo
 		return nil, marshallError
 	}
 
-	page, err := readFromWithBody(url, bodyStr, c.PutHandler)
+	page, err := readJSONWithBody(url, bodyStr, c.PutJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -101,21 +97,24 @@ func (c *CouchCandy) AddWithID(id string, document interface{}) (*OperationRespo
 func (c *CouchCandy) AddAttachment(id, rev, name, contentType string, file []byte) (*OperationResponse, error) {
 
 	url := fmt.Sprintf("%s/%s/%s?rev=%s", createDatabaseURL(c.Session), id, name, rev)
-	fmt.Printf("Attachment url : %s\n", url)
 
-	request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(file))
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add(HeaderContentType, contentType)
-
-	response, err := http.DefaultClient.Do(request)
+	page, err := readBytesWithBody(url, contentType, file, c.PutBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	page, err := ioutil.ReadAll(response.Body)
-	defer response.Body.Close()
+	return toOperationResponse(page)
+
+}
+
+// DeleteAttachment delets the named attachment on the document corresponding
+// to the id-rev pair.
+func (c *CouchCandy) DeleteAttachment(id, rev, name string) (*OperationResponse, error) {
+
+	// DELETE /db/doc/attachmentname?rev=...
+	url := fmt.Sprintf("%s/%s/%s?rev=%s", createDatabaseURL(c.Session), id, name, rev)
+
+	page, err := readJSON(url, c.Delete)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +127,7 @@ func (c *CouchCandy) AddAttachment(id, rev, name, contentType string, file []byt
 func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 
 	url := fmt.Sprintf("%s/_all_docs%s", createDatabaseURL(c.Session), toQueryString(options))
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +145,7 @@ func (c *CouchCandy) DocumentsByKeys(keys []string, options Options) (*AllDocume
 		Keys: keys,
 	})
 
-	page, err := readFromWithBody(url, string(body), c.PostHandler)
+	page, err := readJSONWithBody(url, string(body), c.PostJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +160,7 @@ func (c *CouchCandy) AddDatabase(name string) (*OperationResponse, error) {
 	c.Session.Database = name
 	url := createDatabaseURL(c.Session)
 
-	page, err := readFromWithBody(url, "", c.PutHandler)
+	page, err := readJSONWithBody(url, "", c.PutJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +174,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 
 	c.Session.Database = name
 	url := createDatabaseURL(c.Session)
-	page, err := readFrom(url, c.DeleteHandler)
+	page, err := readJSON(url, c.Delete)
 	if err != nil {
 		return nil, err
 	}
@@ -185,10 +184,10 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 }
 
 // Delete Deletes the passed document with revision from the database
-func (c *CouchCandy) Delete(id string, revision string) (*OperationResponse, error) {
+func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationResponse, error) {
 
 	url := fmt.Sprintf("%s?rev=%s", createDocumentURL(c.Session, id), revision)
-	page, err := readFrom(url, c.DeleteHandler)
+	page, err := readJSON(url, c.Delete)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +200,7 @@ func (c *CouchCandy) Delete(id string, revision string) (*OperationResponse, err
 func (c *CouchCandy) AllDatabases() ([]string, error) {
 
 	url := createAllDatabasesURL(c.Session)
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +215,7 @@ func (c *CouchCandy) AllDatabases() ([]string, error) {
 func (c *CouchCandy) ChangeNotifications(options Options) (*Changes, error) {
 
 	url := fmt.Sprintf("%s/_changes?style=%s", createDatabaseURL(c.Session), options.Style)
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +230,7 @@ func (c *CouchCandy) ChangeNotifications(options Options) (*Changes, error) {
 func (c *CouchCandy) View(ddoc, view string, options Options) (*ViewResponse, error) {
 
 	url := fmt.Sprintf("%s/_design/%s/_view/%s%s", createDatabaseURL(c.Session), ddoc, view, toQueryString(options))
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return nil, err
 	}
@@ -244,91 +243,10 @@ func (c *CouchCandy) ViewWithList(ddoc, list, view string, options Options) (*Vi
 
 	url := fmt.Sprintf("%s/_design/%s/_list/%s/%s/%s%s", createDatabaseURL(c.Session), ddoc, list, ddoc, view, toQueryString(options))
 	fmt.Printf("CouchCandy.CallView(%s)\n", url)
-	page, err := readFrom(url, c.GetHandler)
+	page, err := readJSON(url, c.Get)
 	if err != nil {
 		return nil, err
 	}
 	return toViewResponse(page)
-
-}
-
-func readFromWithBody(url, body string, handler func(str string, bd string) (*http.Response, error)) ([]byte, error) {
-
-	res, err := handler(url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	page, err := ioutil.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return page, nil
-
-}
-
-func readFrom(url string, handler func(str string) (*http.Response, error)) ([]byte, error) {
-
-	res, err := handler(url)
-	if err != nil {
-		return nil, err
-	}
-
-	page, err := ioutil.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return page, nil
-
-}
-
-func defaultPostHandler(url, body string) (*http.Response, error) {
-	return defaultHandlerWithBody(http.MethodPost, url, body, &http.Client{})
-}
-
-func defaultPutHandler(url, body string) (*http.Response, error) {
-	return defaultHandlerWithBody(http.MethodPut, url, body, &http.Client{})
-}
-
-func defaultHandlerWithBody(method, url, body string, client CandyHTTPClient) (*http.Response, error) {
-
-	bodyJSON := strings.NewReader(body)
-	request, requestError := http.NewRequest(method, url, bodyJSON)
-	if requestError != nil {
-		return nil, requestError
-	}
-
-	request.Header.Add(HeaderContentType, JSONContentType)
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
-}
-
-func defaultGetHandler(url string) (*http.Response, error) {
-	return defaultHandler(http.MethodGet, url, &http.Client{})
-}
-
-func defaultDeleteHandler(url string) (*http.Response, error) {
-	return defaultHandler(http.MethodDelete, url, &http.Client{})
-}
-
-func defaultHandler(method, url string, client CandyHTTPClient) (*http.Response, error) {
-
-	request, requestError := http.NewRequest(method, url, nil)
-	if requestError != nil {
-		return nil, requestError
-	}
-
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
 
 }
