@@ -36,7 +36,7 @@ func TestDatabaseInfo(t *testing.T) {
 
 	dbInfo, err := couchcandy.DatabaseInfo()
 	if err != nil {
-		t.Errorf("An error occured whilst fetching DatabaseInfo : %v", err)
+		t.Errorf("An error occurred whilst fetching DatabaseInfo : %v", err)
 	}
 	if dbInfo.DBName != "lendr" {
 		t.Fail()
