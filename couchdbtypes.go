@@ -1,6 +1,9 @@
 package couchcandy
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 const (
 	// MainOnly Used when getting notifications
@@ -151,11 +154,14 @@ type ViewResponse struct {
 	Rows      []ViewRow `json:"rows,omitempty"`
 }
 
-// ViewRow represents a row in the ViewResponse
+// ViewRow represents a row in the ViewResponse. Both the Key and Value fields are json.RawMessage types
+// so that they can be unmarshaled with the desired type in a subsequent step. Since this lib does not have
+// any indication as to what will be returned from CouchDB, it is preferred to simply delegate the response
+// values to the calling code.
 type ViewRow struct {
-	ID    string      `json:"id,omitempty"`
-	Key   interface{} `json:"key,omitempty"`
-	Value interface{} `json:"value,omitempty"`
+	ID    string          `json:"id,omitempty"`
+	Key   json.RawMessage `json:"key,omitempty"`
+	Value json.RawMessage `json:"value,omitempty"`
 }
 
 // AllDocuments This struct contains the response to the all documents call.
@@ -169,10 +175,10 @@ type AllDocuments struct {
 
 // Row This is a row in the array of rows on the AllDocuments struct.
 type Row struct {
-	ID    string      `json:"id,omitempty"`
-	Key   string      `json:"key,omitempty"`
-	Value Value       `json:"value,omitempty"`
-	Doc   interface{} `json:"doc,omitempty"`
+	ID    string          `json:"id,omitempty"`
+	Key   string          `json:"key,omitempty"`
+	Value Value           `json:"value,omitempty"`
+	Doc   json.RawMessage `json:"doc,omitempty"`
 }
 
 // Value The value returned in rows whilst calling CouchDB's _all_docs service.

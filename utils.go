@@ -48,20 +48,20 @@ func toCandyDocument(str string) (*CandyDocument, error) {
 
 func toViewResponse(page []byte) (*ViewResponse, error) {
 	viewResponse := &ViewResponse{}
-	unmarshallError := json.Unmarshal(page, viewResponse)
-	return viewResponse, unmarshallError
+	err := json.Unmarshal(page, viewResponse)
+	return viewResponse, err
 }
 
 func toAllDocuments(page []byte) (*AllDocuments, error) {
 	allDocuments := &AllDocuments{}
-	unmarshallError := json.Unmarshal(page, allDocuments)
-	return allDocuments, unmarshallError
+	err := json.Unmarshal(page, allDocuments)
+	return allDocuments, err
 }
 
 func toOperationResponse(page []byte) (*OperationResponse, error) {
 	response := &OperationResponse{}
-	unmarshallError := json.Unmarshal(page, response)
-	return response, unmarshallError
+	err := json.Unmarshal(page, response)
+	return response, err
 }
 
 // this is a violent hack to set the Revisions field to nil so that it does no get marshalled initially.
