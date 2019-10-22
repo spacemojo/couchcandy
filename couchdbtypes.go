@@ -3,6 +3,7 @@ package couchcandy
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 )
 
 const (
@@ -49,6 +50,22 @@ type Attachment struct {
 type Revision struct {
 	Start int      `json:"start,omitempty"`
 	IDS   []string `json:"ids,omitempty"`
+}
+
+// NewDBSession returns an inited session with the available environment variables
+func NewDBSession() Session {
+	return Session{
+		Host:     os.Getenv("dbhost"),
+		Port:     5984,
+		Database: os.Getenv("dbname"),
+		Username: os.Getenv("dbusername"),
+		Password: os.Getenv("dbpassword"),
+	}
+}
+
+// NewClient returns an initialized client for connecting to the database
+func NewClient() *CouchCandy {
+	return NewCouchCandy(NewDBSession())
 }
 
 // CouchCandy Struct that provides all CouchDB's API has to offer.
