@@ -22,6 +22,33 @@ type ShortProfile struct {
 	Email     string `json:"email"`
 }
 
+func IsValidSession(session Session) bool {
+	if session.Database != "test" || session.Host != "http://localhost" || session.Password != "nimda" || session.Username != "admin" {
+		return false
+	}
+	return true
+}
+
+func TestNewDBSession(t *testing.T) {
+
+	session := NewDBSession()
+	if !IsValidSession(session) {
+		t.Errorf("Expecting other values than received : %v", session)
+		t.Fail()
+	}
+
+}
+
+func TestNewClient(t *testing.T) {
+
+	client := NewClient()
+	if !IsValidSession(client.Session) {
+		t.Errorf("Expecting other values than received : %v", client.Session)
+		t.Fail()
+	}
+
+}
+
 func TestDatabaseInfo(t *testing.T) {
 
 	couchcandy := NewCouchCandy(Session{
