@@ -802,7 +802,8 @@ func TestToParameters(t *testing.T) {
 		parameters[3] != "key=serge" ||
 		parameters[4] != "start_key=2018" ||
 		parameters[5] != "end_key=2020" ||
-		parameters[6] != "3" {
+		parameters[6] != "group_level=3" {
+		t.Errorf("Was not expecting this array : %v", parameters)
 		t.Fail()
 	}
 

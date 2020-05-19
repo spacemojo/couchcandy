@@ -26,8 +26,8 @@ type CandyHTTPClient interface {
 // CandyDocument Struct for holding a CouchDB document.
 // Not supposed to be used directly but is required to construct
 // your custom types since all documents in CouchDB have these
-// 2 attributes and the potential of having Error, Reason and
-// _revisions.
+// 2 attributes and the potential of having Error, Reason,
+// Attachments and _revisions.
 type CandyDocument struct {
 	ID          string                `json:"_id,omitempty"`
 	REV         string                `json:"_rev,omitempty"`
