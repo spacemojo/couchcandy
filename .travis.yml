@@ -5,7 +5,7 @@ go:
 
 before_install:
   - go get -t -v ./...
-  - docker run -p 5984:5984 -d --name cdb -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=nimda
+  - docker run -p 5984:5984 -d --name cdb -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=nimda couchdb:2.3
 
 script:
   - make test
