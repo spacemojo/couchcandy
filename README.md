@@ -4,11 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spacemojo/couchcandy)](https://goreportcard.com/report/github.com/spacemojo/couchcandy)
-[![codecov](https://codecov.io/gh/spacemojo/couchcandy/branch/master/graph/badge.svg)](https://codecov.io/gh/spacemojo/couchcandy)
 [![GoDoc](https://godoc.org/github.com/spacemojo/couchcandy?status.svg)](https://godoc.org/github.com/spacemojo/couchcandy)
-[![Join the chat at https://gitter.im/couchcandy/Lobby](https://badges.gitter.im/couchcandy/Lobby.svg)](https://gitter.im/couchcandy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-This is my first try at a GoLang project, be gentle.
 
 To get started : 
 
