@@ -159,7 +159,7 @@ func TestDeleteFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	couchcandy.Delete = func(string) (resp *http.Response, e error) {
-		return nil, fmt.Errorf("an error occured when deleting the document")
+		return nil, fmt.Errorf("an error occurred when deleting the document")
 	}
 
 	_, err := couchcandy.DeleteDocument("053cc05f2ee97a0c91d276c9e700194b", "3-b96f323b37f19c4d1affddf3db3da9c5")
@@ -543,7 +543,7 @@ func TestDocumentsByKeysFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "userapi", Username: "test", Password: "pwd",
 	})
 	couchcandy.PostJSON = func(string, string) (*http.Response, error) {
-		return nil, fmt.Errorf("An error occured when fetching documents by keys")
+		return nil, fmt.Errorf("An error occurred when fetching documents by keys")
 	}
 
 	_, err := couchcandy.DocumentsByKeys([]string{""}, Options{IncludeDocs: true, Limit: 10})
@@ -690,7 +690,7 @@ func TestCallMapFunctionFailure(t *testing.T) {
 		Host: "http://127.0.0.1", Port: 5984, Database: "lendr", Username: "test", Password: "gotest",
 	})
 	couchcandy.Get = func(string) (*http.Response, error) {
-		return nil, fmt.Errorf("an error occured whilst calling the map function")
+		return nil, fmt.Errorf("an error occurred whilst calling the map function")
 	}
 
 	docs, err := couchcandy.View("cards", "by_suit", Options{})

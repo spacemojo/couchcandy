@@ -183,7 +183,7 @@ func (c *CouchCandy) DeleteDatabase(name string) (*OperationResponse, error) {
 
 }
 
-// Delete Deletes the passed document with revision from the database
+// DeleteDocument Deletes the passed document with revision from the database
 func (c *CouchCandy) DeleteDocument(id string, revision string) (*OperationResponse, error) {
 
 	url := fmt.Sprintf("%s?rev=%s", createDocumentURL(c.Session, id), revision)
