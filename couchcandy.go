@@ -136,6 +136,31 @@ func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 
 }
 
+func (c *CouchCandy) DesignDocs() ([]*DesignDoc, error) {
+
+	allDocuments, err := c.Documents(Options{
+		StartKey: fmt.Sprintf("\"%s\"", "_design"),
+		EndKey:   fmt.Sprintf("\"%s\"", "_design0"),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	designDocs := make([]*DesignDoc, 0)
+	for _, doc := range allDocuments.Rows {
+		designDoc := &DesignDoc{}
+		err = json.Unmarshal(doc.Doc, designDoc)
+		if err != nil {
+			return designDocs, err
+		}
+		designDocs = append(designDocs, designDoc)
+	}
+
+	return designDocs, nil
+
+}
+
 // DocumentsByKeys Fetches all the documents corresponding to the passed keys array.
 func (c *CouchCandy) DocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
 

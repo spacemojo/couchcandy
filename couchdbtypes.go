@@ -115,6 +115,7 @@ type Options struct {
 	EndKey      string
 	Reduce      bool
 	GroupLevel  int
+	Skip        int
 }
 
 // NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.
@@ -160,6 +161,20 @@ type Session struct {
 	Database string
 	Username string
 	Password string
+}
+
+// DesignDoc
+type DesignDoc struct {
+	ID       string          `json:"_id,omitempty"`
+	REV      string          `json:"_rev,omitempty"`
+	Language string          `json:"language,omitempty"`
+	Views    map[string]View `json:"views,omitempty"`
+}
+
+// View
+type View struct {
+	Map    string `json:"map,omitempty"`
+	Reduce string `json:"reduce,omitempty"`
 }
 
 // ViewResponse represents the response sent when a view is called

@@ -2,6 +2,7 @@ package couchcandy
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -68,6 +69,28 @@ func TestDatabaseInfo(t *testing.T) {
 	if dbInfo.DBName != "lendr" {
 		t.Fail()
 	}
+
+}
+
+func TestAllDesignDocuments(t *testing.T) {
+
+	allDocuments := &AllDocuments{}
+	err := json.Unmarshal([]byte(docs), allDocuments)
+	if err != nil {
+		t.Errorf("An error occurred whils unmarshaling docs: %v", err)
+	}
+
+	designDocs := make([]*DesignDoc, 0)
+	for _, doc := range allDocuments.Rows {
+		designDoc := &DesignDoc{}
+		err = json.Unmarshal(doc.Doc, designDoc)
+		if err != nil {
+			t.Errorf("An error occurred whils unmarshaling single document: %v", err)
+		}
+		designDocs = append(designDocs, designDoc)
+	}
+
+	t.Logf("Design docs : %d", len(designDocs))
 
 }
 
@@ -835,3 +858,188 @@ func TestToParameters(t *testing.T) {
 	}
 
 }
+
+var docs = `
+{
+  "total_rows": 3607,
+  "offset": 2430,
+  "rows": [
+    {
+      "id": "_design/_alldocs",
+      "key": "_design/_alldocs",
+      "value": { "rev": "6-bb0fb314efb0c94aacf60a387be727ab" },
+      "doc": {
+        "_id": "_design/_alldocs",
+        "_rev": "6-bb0fb314efb0c94aacf60a387be727ab",
+        "views": {
+          "_by_type": {
+            "map": "function (doc) {\n  emit(doc.type, doc);\n}",
+            "reduce": "_count"
+          },
+          "_by_userdata": {
+            "reduce": "_count",
+            "map": "function (doc) {\n  if(doc.type != \"calldata\" && doc.type != \"panic\") {\n    emit(doc.type, 1);\n  }\n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_calldata",
+      "key": "_design/_calldata",
+      "value": { "rev": "1-372bf12545e9c2275f4cc7b16cdbd00b" },
+      "doc": {
+        "_id": "_design/_calldata",
+        "_rev": "1-372bf12545e9c2275f4cc7b16cdbd00b",
+        "views": {
+          "_by_latency_signal": {
+            "map": "function (doc) {\r\n  emit([doc.startsegments.year, doc.startsegments.month, doc.startsegments.day, doc.startsegments.hour, doc.startsegments.minute], doc.latency);\r\n}",
+            "reduce": "function (keys, values, rereduce) {\n  avg = Math.round(sum(values) / values.length);\n  return(avg);\n}"
+          },
+          "_by_traffic_signal": {
+            "reduce": "_count",
+            "map": "function (doc) {\r\n  emit([doc.startsegments.year, doc.startsegments.month, doc.startsegments.day, doc.startsegments.hour, doc.startsegments.minute], 1);\r\n}"
+          },
+          "_by_trace_id": {
+            "map": "function (doc) {\n  if (doc.type == \"calldata\") {\n    emit(doc.traceid, doc);\n  }\n}"
+          },
+          "_by_uri": {
+            "map": "function (doc) {\n  if(doc.type == \"calldata\") {\n    emit(doc.uri, 1);\n  }\n}"
+          },
+          "_by_status_code": {
+            "map": "function (doc) {\n  if (doc.type == \"calldata\") {\n    emit(doc.statuscode, doc);\n  }\n}",
+            "reduce": "_count"
+          },
+          "_by_start": {
+            "map": "function (doc) {\n  if(doc.type == \"calldata\") {\n    emit(doc.start, doc.uri);\n  }\n}"
+          },
+          "_by_uri_latency": {
+            "map": "function (doc) {\n  if(doc.type == \"calldata\") {\n    emit(doc.method + \" \" + doc.uri, {uri: doc.method + \" \" + doc.uri, latency: doc.latency});\n  }\n}",
+            "reduce": "function (keys, values, rereduce) {\n  var result = {};\n  \n  if (rereduce) { // keys are null and values are from the other non-rereduce calls\n    for (var k = 0 ; k < values.length ; k++) {\n      for(var u in values[k]) {\n        if (result[u] === undefined) {\n          result[u] = {};\n          result[u].count = values[k][u].count;\n          result[u].sum = values[k][u].sum;\n        } else {\n          result[u].count += values[k][u].count;\n          result[u].sum += values[k][u].sum;\n        }\n      }\n    }\n    var averages = {};\n    for(var uri in result) {\n      if(result[uri].sum == 0) {\n        averages[uri] = 0;\n      } else {\n        averages[uri] = {avg: result[uri].sum / result[uri].count, sum: result[uri].sum, count: result[uri].count};\n      }\n    }\n    return averages;\n  } else { // keys are filled with [key, doc.id]\n    for (var i = 0 ; i < keys.length ; i++) {\n      result[keys[i][0]] = {sum: 0, count: 0};\n    }\n    for (var j = 0 ; j < values.length ; j++) {\n      result[values[j].uri].sum += values[j].latency;\n      result[values[j].uri].count += 1;\n    }\n    return result;\n  }\n  \n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_events",
+      "key": "_design/_events",
+      "value": { "rev": "7-3d4a8d2cb349a7d1dd5aaef814a0b4a7" },
+      "doc": {
+        "_id": "_design/_events",
+        "_rev": "7-3d4a8d2cb349a7d1dd5aaef814a0b4a7",
+        "views": {
+          "_by_userid": {
+            "map": "function (doc) {\n  if (doc.type == \"event\") {\n    emit(doc.userid, doc);\n  }\n}"
+          },
+          "_by_userid_date": {
+            "map": "function (doc) {\n  if(doc.type == \"event\"){\n    emit([doc.userid, doc.start.substring(0,12)], doc);\n  }\n}"
+          },
+          "_by_taskid": {
+            "map": "function (doc) {\n  if(doc.type == \"event\" && doc.taskid != null && doc.taskid != \"\"){\n    emit(doc.taskid, doc);\n  }\n}",
+            "reduce": "_count"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_notes",
+      "key": "_design/_notes",
+      "value": { "rev": "1-618cc2bdfee07d97bbb1e93292a29d19" },
+      "doc": {
+        "_id": "_design/_notes",
+        "_rev": "1-618cc2bdfee07d97bbb1e93292a29d19",
+        "views": {
+          "_by_userid": {
+            "map": "function (doc) {\n  if (doc.type == \"note\") {\n    emit(doc.userid, doc);\n  }\n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_panics",
+      "key": "_design/_panics",
+      "value": { "rev": "1-4045f1a883269b74585c0e6f7c82c7a9" },
+      "doc": {
+        "_id": "_design/_panics",
+        "_rev": "1-4045f1a883269b74585c0e6f7c82c7a9",
+        "views": {
+          "_by_trace_id": {
+            "map": "function (doc) {\n\n  if(doc.type == \"panic\") {\n    emit(doc.calldata.traceid, doc);\n  }\n  \n}"
+          },
+          "_by_time": {
+            "map": "function (doc) {\n\n  if(doc.type == \"panic\") {\n    emit(doc.time, doc.uri);\n  }\n  \n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_tasks",
+      "key": "_design/_tasks",
+      "value": { "rev": "1-15a605f865785f035a83f05e8b0b4922" },
+      "doc": {
+        "_id": "_design/_tasks",
+        "_rev": "1-15a605f865785f035a83f05e8b0b4922",
+        "views": {
+          "_by_userid": {
+            "map": "function (doc) {\n  if (doc.type == \"task\") {\n    emit(doc.userid, doc);\n  }\n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_tz",
+      "key": "_design/_tz",
+      "value": { "rev": "1-ab94ad8c930eed68069f2f459e724ef5" },
+      "doc": {
+        "_id": "_design/_tz",
+        "_rev": "1-ab94ad8c930eed68069f2f459e724ef5",
+        "views": {
+          "_by_olson_family": {
+            "map": "function (doc) {\n  if(doc.type == \"zoneinfo\") {\n    \n    for(let i = 0; i < doc.values.length; i++) {\n     \n      let fullString = doc.values[i];\n      let index = fullString.indexOf('/');\n\n      if (index !== -1) {\n        let substring = fullString.substring(0, index);\n        emit(substring, fullString);\n      } \n\n    }\n    \n  }\n}",
+            "reduce": "_count"
+          },
+          "_by_name": {
+            "map": "function (doc) {\n  if(doc.type == \"zoneinfo\") {\n    for(let i = 0; i < doc.values.length; i++) {\n      emit(doc.values[i], doc.values[i]);\n    }\n  }\n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_userdata",
+      "key": "_design/_userdata",
+      "value": { "rev": "1-301783b6bb84f51ebb6c1de3bdaeb2b7" },
+      "doc": {
+        "_id": "_design/_userdata",
+        "_rev": "1-301783b6bb84f51ebb6c1de3bdaeb2b7",
+        "views": {
+          "_by_userid": {
+            "map": "function (doc) {\n  if(doc.type == \"userdata\") {\n    emit(doc.userid, doc);\n  }\n}"
+          }
+        },
+        "language": "javascript"
+      }
+    },
+    {
+      "id": "_design/_usertokenlist",
+      "key": "_design/_usertokenlist",
+      "value": { "rev": "1-021fbb3ef5f0ddc4cc3d92f54a5ae037" },
+      "doc": {
+        "_id": "_design/_usertokenlist",
+        "_rev": "1-021fbb3ef5f0ddc4cc3d92f54a5ae037",
+        "views": {
+          "_by_userid": {
+            "map": "function (doc) {\n  if(doc.type == \"usertokenlist\") {\n    emit(doc.userid, doc);\n  }\n}"
+          }
+        },
+        "language": "javascript"
+      }
+    }
+  ]
+}
+`
