@@ -136,7 +136,7 @@ func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 
 }
 
-func (c *CouchCandy) DesignDocs() ([]*DesignDoc, error) {
+func (c *CouchCandy) DesignDocs() (*DesignDocs, error) {
 
 	allDocuments, err := c.Documents(Options{
 		StartKey: fmt.Sprintf("\"%s\"", "_design"),
@@ -147,14 +147,37 @@ func (c *CouchCandy) DesignDocs() ([]*DesignDoc, error) {
 		return nil, err
 	}
 
-	designDocs := make([]*DesignDoc, 0)
+	designDocs := NewDesignDocs()
+
 	for _, doc := range allDocuments.Rows {
-		designDoc := &DesignDoc{}
-		err = json.Unmarshal(doc.Doc, designDoc)
+
+		partial := &partialDesignDoc{}
+
+		err = json.Unmarshal(doc.Doc, partial)
 		if err != nil {
-			return designDocs, err
+			return nil, err
 		}
-		designDocs = append(designDocs, designDoc)
+
+		if partial.Language == "query" {
+
+			index := &IndexDesignDoc{}
+			err = json.Unmarshal(doc.Doc, index)
+			if err != nil {
+				return nil, err
+			}
+			designDocs.Index = append(designDocs.Index, index)
+
+		} else if partial.Language == "javascript" {
+
+			mapReduce := &MapReduceDesignDoc{}
+			err = json.Unmarshal(doc.Doc, mapReduce)
+			if err != nil {
+				return nil, err
+			}
+			designDocs.MapReduce = append(designDocs.MapReduce, mapReduce)
+
+		}
+
 	}
 
 	return designDocs, nil
