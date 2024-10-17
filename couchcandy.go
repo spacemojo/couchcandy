@@ -136,6 +136,54 @@ func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 
 }
 
+func (c *CouchCandy) DesignDocs() (*DesignDocs, error) {
+
+	allDocuments, err := c.Documents(Options{
+		StartKey: fmt.Sprintf("\"%s\"", "_design"),
+		EndKey:   fmt.Sprintf("\"%s\"", "_design0"),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	designDocs := NewDesignDocs()
+
+	for _, doc := range allDocuments.Rows {
+
+		partial := &partialDesignDoc{}
+
+		err = json.Unmarshal(doc.Doc, partial)
+		if err != nil {
+			return nil, err
+		}
+
+		if partial.Language == "query" {
+
+			index := &IndexDesignDoc{}
+			err = json.Unmarshal(doc.Doc, index)
+			if err != nil {
+				return nil, err
+			}
+			designDocs.Index = append(designDocs.Index, index)
+
+		} else if partial.Language == "javascript" {
+
+			mapReduce := &MapReduceDesignDoc{}
+			err = json.Unmarshal(doc.Doc, mapReduce)
+			if err != nil {
+				return nil, err
+			}
+			designDocs.MapReduce = append(designDocs.MapReduce, mapReduce)
+
+		}
+
+	}
+
+	return designDocs, nil
+
+}
+
 // DocumentsByKeys Fetches all the documents corresponding to the passed keys array.
 func (c *CouchCandy) DocumentsByKeys(keys []string, options Options) (*AllDocuments, error) {
 

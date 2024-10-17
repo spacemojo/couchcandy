@@ -115,6 +115,7 @@ type Options struct {
 	EndKey      string
 	Reduce      bool
 	GroupLevel  int
+	Skip        int
 }
 
 // NewCouchCandy Returns a new CouchCandy struct initialised with the provided values.
@@ -160,6 +161,67 @@ type Session struct {
 	Database string
 	Username string
 	Password string
+}
+
+// DesignDocs
+type DesignDocs struct {
+	MapReduce []*MapReduceDesignDoc `json:"mapreduce"`
+	Index     []*IndexDesignDoc     `json:"index"`
+}
+
+func NewDesignDocs() *DesignDocs {
+	d := &DesignDocs{}
+	d.MapReduce = make([]*MapReduceDesignDoc, 0)
+	d.Index = make([]*IndexDesignDoc, 0)
+	return d
+}
+
+type partialDesignDoc struct {
+	Language string `json:"language,omitempty"`
+}
+
+type MapReduceDesignDoc struct {
+	ID       string          `json:"_id,omitempty"`
+	REV      string          `json:"_rev,omitempty"`
+	Language string          `json:"language,omitempty"`
+	Views    map[string]View `json:"views,omitempty"`
+}
+
+// Map / Reduce View when the language is "javascript"
+type View struct {
+	Map    string `json:"map,omitempty"`
+	Reduce string `json:"reduce,omitempty"`
+}
+
+type IndexDesignDoc struct {
+	ID       string               `json:"_id,omitempty"`
+	REV      string               `json:"_rev,omitempty"`
+	Language string               `json:"language,omitempty"`
+	Views    map[string]IndexView `json:"views,omitempty"`
+}
+
+// IndexView when the language is "query"
+type IndexView struct {
+	Map     IndexMap     `json:"map"`
+	Reduce  string       `json:"reduce"`
+	Options IndexOptions `json:"options"`
+}
+
+type IndexMap struct {
+	Fields                Fields                 `json:"fields"`
+	PartialFilterSelector map[string]interface{} `json:"partial_filter_selector"`
+}
+
+type Fields struct {
+	CreatedOn string `json:"createdon"`
+}
+
+type IndexOptions struct {
+	Def Def `json:"def"`
+}
+
+type Def struct {
+	Fields []string `json:"fields"`
 }
 
 // ViewResponse represents the response sent when a view is called
