@@ -139,8 +139,9 @@ func (c *CouchCandy) Documents(options Options) (*AllDocuments, error) {
 func (c *CouchCandy) DesignDocs() (*DesignDocs, error) {
 
 	allDocuments, err := c.Documents(Options{
-		StartKey: fmt.Sprintf("\"%s\"", "_design"),
-		EndKey:   fmt.Sprintf("\"%s\"", "_design0"),
+		StartKey:    fmt.Sprintf("\"%s\"", "_design"),
+		EndKey:      fmt.Sprintf("\"%s\"", "_design0"),
+		IncludeDocs: true,
 	})
 
 	if err != nil {
