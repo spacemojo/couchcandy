@@ -111,6 +111,7 @@ type Options struct {
 	IncludeDocs bool
 	Style       string
 	Key         string
+	Keys        string
 	StartKey    string
 	EndKey      string
 	Reduce      bool

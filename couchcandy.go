@@ -1,3 +1,22 @@
+// Package couchcandy provides the tools and utilities to leverage and manage a CouchDB database.
+// This current implementation works with CouchDB 3.x.x
+//
+// To get started, you need to initialize a client with the session information :
+//
+//		client := couchcandy.NewCouchCandy(Session{
+//		  Host:     "http://[HOST_IP]",
+//		  Port:     [PORT],
+//		  Database: "database",
+//		  Username: "username",
+//		  Password: "p@$$w0rD",
+//		})
+//	 // then use the client, like to get the database info
+//	 dbInfo, err :=  client.DatabaseInfo()
+//	 fmt.Printf("Database info : %s -> %d documents\n", dbInfo.DBName, dbInfo.DocCount)
+//
+// Note that it is highly recommended to never use a clear text password in the code, this snippet
+// is for introduction purposes only. A better practice would be to use some secret management tool
+// or environment variables.
 package couchcandy
 
 import (

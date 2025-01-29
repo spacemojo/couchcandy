@@ -113,6 +113,9 @@ func toParameters(options Options) []string {
 	if options.GroupLevel != 0 {
 		parameters = append(parameters, fmt.Sprintf("group_level=%v", options.GroupLevel))
 	}
+	if options.Keys != "" {
+		parameters = append(parameters, fmt.Sprintf("keys=%s", options.Keys))
+	}
 	return parameters
 
 }
