@@ -114,7 +114,7 @@ func toParameters(options Options) []string {
 		parameters = append(parameters, fmt.Sprintf("group_level=%v", options.GroupLevel))
 	}
 	if options.Keys != "" {
-		parameters = append(parameters, fmt.Sprintf("keys=%s", options.Keys))
+		parameters = append(parameters, fmt.Sprintf("keys=%s", url.QueryEscape(options.Keys)))
 	}
 	return parameters
 
