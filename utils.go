@@ -10,7 +10,7 @@ import (
 )
 
 func createBaseURL(session Session) string {
-	return fmt.Sprintf("http://%s:%s@%s:%s", session.Username, session.Password, session.Host[7:], strconv.Itoa(session.Port))
+	return fmt.Sprintf("%s:%s@%s:%s", session.Username, session.Password, session.Host, strconv.Itoa(session.Port))
 }
 
 func createDatabaseURL(session Session) string {
