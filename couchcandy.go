@@ -22,7 +22,23 @@ package couchcandy
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
+
+func NewCouchCandyClient(config map[string]string) (*CouchCandy, error) {
+	portStr := config["COUCHDB_PORT"]
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return nil, err
+	}
+	return NewCouchCandy(Session{
+		Host:     config["COUCHDB_HOST"],
+		Port:     port,
+		Database: config["COUCHDB_DATABASE"],
+		Username: config["COUCHDB_USER"],
+		Password: config["COUCHDB_PASSWORD"],
+	}), nil
+}
 
 // DatabaseInfo returns basic information about the database in session.
 func (c *CouchCandy) DatabaseInfo() (*DatabaseInfo, error) {
